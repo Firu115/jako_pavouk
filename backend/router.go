@@ -34,9 +34,13 @@ func getVsechnyLekce(c *fiber.Ctx) error {
 		return err
 	}
 	if id != 0 {
-		return c.Status(http.StatusOK).JSON(fiber.Map{"lekce": lekce, "uziv": id}) //TODO
+		dokoncene, err := databaze.GetDokonceneLekce(id)
+		if err != nil {
+			return err
+		}
+		return c.Status(http.StatusOK).JSON(fiber.Map{"lekce": lekce, "dokoncene": dokoncene}) //TODO
 	}
-	return c.Status(http.StatusOK).JSON(fiber.Map{"lekce": lekce, "uziv": id})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"lekce": lekce, "dokoncene": []uint{}})
 }
 
 func getCviceniVLekci(c *fiber.Ctx) error {
@@ -85,8 +89,8 @@ func registrace(c *fiber.Ctx) error {
 	// overeni spravnych dat co prijdou
 	var body struct {
 		Email string `json:"email" binding:"required"`
-		Jmeno string `json:"jmeno" binding:"required,min=3"`
-		Heslo string `json:"heslo" binding:"required"`
+		Jmeno string `json:"jmeno" binding:"required,min=3,max=25"`
+		Heslo string `json:"heslo" binding:"required,min=8,max=25"`
 	}
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(err)
@@ -107,7 +111,7 @@ func registrace(c *fiber.Ctx) error {
 		if err != nil {
 			return err
 		} else {
-			return c.Status(http.StatusOK).JSON(fiber.Map{"Token": token})
+			return c.Status(http.StatusOK).JSON(fiber.Map{"token": token})
 		}
 	} else {
 		return c.Status(http.StatusBadRequest).JSON("Uzivatel jiz existuje")
@@ -140,7 +144,7 @@ func prihlaseni(c *fiber.Ctx) error {
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).JSON("Token se pokazil")
 		} else {
-			return c.Status(http.StatusOK).JSON(fiber.Map{"Token": token})
+			return c.Status(http.StatusOK).JSON(fiber.Map{"token": token})
 		}
 	}
 }

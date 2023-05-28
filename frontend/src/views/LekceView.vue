@@ -1,0 +1,132 @@
+<script>
+import axios from 'axios'
+
+export default {
+    name: "Lekce",
+    data() {
+        return {
+            pismena: this.$route["params"].pismena,
+            info: {}
+        }
+    },
+    methods: {
+        prihlaste_se() {
+            alert('Nejprve se prosím přihlašte')
+        },
+        index1(index) {
+            return index + 1
+        },
+        jeDokoncene(index) {
+            return this.info['dokonceno'].includes(index + 1)
+        }
+    },
+    computed: {
+        formatovany_pismena() {
+            let vratit = "";
+            for (let i = 0; i < this.pismena.length; i++) {
+                vratit += i < this.pismena.length - 1 ? this.pismena.at(i) + ", " : this.pismena.at(i);
+            }
+            return vratit;
+        },
+    },
+    mounted() {
+        axios
+            .get('/lekce/' + this.pismena, {
+                headers: {
+                    "Token": this.$ls.getItem("token").value
+                }
+            })
+            .then(response => {
+                this.info = response.data
+            });
+    },
+}
+</script>
+
+<template>
+    <h1><router-link class="tlacZpet" :to="'/lekce'"><img src="@/assets/icony/sipkaL.svg" alt="Zpět"></router-link>Lekce: {{ formatovany_pismena }}</h1>
+    <div class="kontejnr" v-if="!info.error">
+        <div v-if="info.length !== 0" v-for="(cviceni, index) in info['cviceni']">
+            <h2>
+                <router-link class="lekceBlok" :class="{dokoncenyBlok: jeDokoncene(index)}" v-if="cviceni[1] === 'nova'" :to="'/lekce/' + pismena + '/' + index1(index)">
+                    <h2>{{ index1(index) }}</h2>
+                    <hr>
+                    <h3>Nová písmenka</h3>
+                    <img class="fajvkaVetsi" v-if="jeDokoncene(index)" src="@/assets/icony/right.svg" alt="Dokonceno!">
+                    <img class="playVetsi" v-else src="@/assets/icony/start.svg" alt="Začít lekci">
+                </router-link>
+                <router-link class="lekceBlok" :class="{dokoncenyBlok: jeDokoncene(index)}" v-else-if="cviceni[1] === 'probrana'" :to="'/lekce/' + pismena + '/' + index1(index)">
+                    <h2>{{ index1(index) }}</h2>
+                    <hr>
+                    <h3>Probraná písmenka</h3>
+                    <img class="fajvkaVetsi" v-if="jeDokoncene(index)" src="@/assets/icony/right.svg" alt="Dokonceno!">
+                    <img class="playVetsi" v-else src="@/assets/icony/start.svg" alt="Začít lekci">
+                </router-link>
+                <router-link v-else class="lekceBlok" :class="{dokoncenyBlok: jeDokoncene(index)}" :to="'/lekce/' + pismena + '/' + index1(index)">
+                    <h2>{{ index1(index) }}</h2>
+                    <hr>
+                    <h3>Se slovy</h3>
+                    <img class="fajvkaVetsi" v-if="jeDokoncene(index)" src="@/assets/icony/right.svg" alt="Dokonceno!">
+                    <img class="playVetsi" v-else src="@/assets/icony/start.svg" alt="Začít lekci">
+                </router-link>
+            </h2>
+        </div>
+        <p v-else>Tato lekce zatím nemá žádná cvičení</p>
+    </div>
+    <p v-else>{{ info.error }}</p>
+
+
+</template>
+
+<style scoped>
+.kontejnr {
+    display: flex;
+    gap: 15px;
+}
+
+.lekceBlok {
+    color: var(--bila);
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    border-radius: 10px;
+    width: 200px;
+    background-color: var(--tmave-fialova);
+    height: 240px;
+    transition-duration: 0.2s;
+    padding: 15px 15px 30px 15px;
+}
+
+.lekceBlok:hover {
+    background-color: var(--fialova);
+    transition-duration: 0.2s;
+}
+
+.lekceBlok hr {
+    width: 160px;
+    align-self: center;
+    margin: 5px;
+}
+
+.dokoncenyBlok {
+    opacity: 80%;
+}
+
+.lekceBlok h3 {
+    align-self: center;
+    font-size: 24px;
+    height: 100px;
+}
+
+.lekceBlok a {
+    text-decoration: none;
+    color: var(--bila);
+    cursor: pointer;
+}
+
+h1 {
+    display: inline-flex;
+    position: relative;
+    right: 22px;
+}
+</style>

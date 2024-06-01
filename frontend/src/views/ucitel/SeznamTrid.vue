@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
 
 const rocniky = ref({ string: [] as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number }[] })
+const pridavani = ref(false)
 
 onMounted(() => {
     axios.get("/skola/tridy", {
@@ -23,7 +24,7 @@ onMounted(() => {
 </script>
 <template>
     <h1>Třídy</h1>
-    <div id="rocniky">
+    <div id="rocniky" v-if="!pridavani">
         <div v-for="tridy, i in rocniky" class="rocnik">
             <h2>{{ i }}. ročník</h2>
             <div id="kontejner">
@@ -43,8 +44,36 @@ onMounted(() => {
             </div>
         </div>
     </div>
+
+    <div v-else>
+        Tady nějak přidáme
+    </div>
+
+    <div id="pridat" @click="pridavani = true">
+        <img src="../../assets/icony/plus.svg" alt="Přidat">
+    </div>
 </template>
 <style scoped>
+#pridat {
+    background-color: var(--tmave-fialova);
+    border-radius: 100%;
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    right: 30px;
+    bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px;
+    cursor: pointer;
+    transition: 0.15s;
+}
+
+#pridat:hover {
+    background-color: var(--fialova);
+}
+
 #rocniky {
     display: flex;
     flex-direction: column;

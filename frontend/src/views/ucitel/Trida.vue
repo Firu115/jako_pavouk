@@ -1,17 +1,346 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import axios from 'axios';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { checkTeapot, getToken, pridatOznameni } from '../../utils';
 
 const id = useRoute().params.id
 
+const trida = ref({} as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number })
+const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
+
+const tab = ref("zaci")
+
+const selectnutej = ref(-1)
+const studentOznacenej = ref(ref({ jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, prumerRychlosti: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map }))
+
+const upravaStudenta = ref(false)
+const jmenoUprava = ref()
+
 onMounted(() => {
-    
+    get()
 })
+
+function get() {
+    axios.get("/skola/trida/" + id, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).then(response => {
+        trida.value = response.data.trida
+        studenti.value = response.data.studenti
+        studenti.value.sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno))
+    }).catch(e => {
+        if (!checkTeapot(e)) {
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        }
+    })
+}
+
+function zamek() {
+    trida.value.zamknuta = !trida.value.zamknuta
+
+    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "zamek" }, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).catch(e => {
+        if (!checkTeapot(e)) {
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        }
+        trida.value.zamknuta = !trida.value.zamknuta
+    })
+}
+
+function select(id: number) {
+    if (selectnutej.value == id) { //unselect
+        selectnutej.value = -1
+        return
+    } 
+    upravaStudenta.value = false
+    selectnutej.value = id
+    axios.get("/skola/student/" + id, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).then(response => {
+        studentOznacenej.value = response.data
+    }).catch(e => {
+        if (!checkTeapot(e)) {
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        }
+        selectnutej.value = -1
+    })
+}
+
+function zmenaJmena(e: Event) {
+    e.preventDefault()
+    if (jmenoUprava.value == "" || jmenoUprava.value.length > 30) {
+        pridatOznameni("Jméno musí být 1-30 znaků dlouhé")
+        upravaStudenta.value = false
+        return
+    } 
+    axios.post("/skola/student/", { jmeno: jmenoUprava.value, id: selectnutej.value }, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).then(_ => {
+        upravaStudenta.value = false
+        studentOznacenej.value.jmeno = jmenoUprava.value
+        get()
+    }).catch(e => {
+        if (!checkTeapot(e)) {
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        }
+        selectnutej.value = -1
+    })
+}
 
 </script>
 <template>
-    <h1>{{ id }}</h1>
+    <h1>{{ trida.jmeno == undefined ? "Třídy" : trida.jmeno }}</h1>
+    <div id="dashboard">
+        <div id="nastaveni">
+            <span>{{ trida.jmeno }}</span>
+            <button class="tlacitko" @click="tab = 'prace'">Zadat práci</button>
+        </div>
+        <div id="kod">
+            <div>
+                <span>{{ trida.kod == undefined ? "------" : trida.kod }}</span>
+                <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída"
+                    @click="zamek()">
+                <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
+            </div>
+            <span>jakopavouk.cz/zapis/{{ trida.kod }}</span>
+        </div>
+    </div>
+    <div v-if="tab == 'zaci'" id="pulic">
+        <div id="kontejner">
+            <div v-for="st in studenti" class="blok" @click="select(st.id)" :class="{ oznaceny: selectnutej == st.id }">
+                <div>
+                    <h3>{{ st.jmeno }}</h3>
+                    <h4>{{ st.email }}</h4>
+                </div>
+                <span><b>{{ Math.round(st.cpm * 10) / 10 }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
+            </div>
+        </div>
+        <div v-if="selectnutej != -1" class="detail">
+            <div id="vrsek">
+                <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
+                <div v-if="!upravaStudenta">
+                    <h2>{{ studentOznacenej.jmeno }}
+                        <img id="upravit" @click="upravaStudenta = true; jmenoUprava = studentOznacenej.jmeno"
+                            src="../../assets/icony/upravit.svg" alt="Upravit">
+                    </h2>
+                    <h3>{{ studentOznacenej.email }}</h3>
+                </div>
+                <form v-else>
+                    <input v-model="jmenoUprava" type="text">
+                    <button type="submit" @click="zmenaJmena" class="tlacitko" id="ulozit">Uložit</button>
+                </form>
+            </div>
+            <div>
+
+            </div>
+        </div>
+        <div v-else class="detail" id="predKliknutim">
+            <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
+            <h2>Vyber studenta!</h2>
+        </div>
+    </div>
 </template>
 <style scoped>
+#predKliknutim {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    gap: 10px;
+}
 
+#predKliknutim img {
+    width: 200px;
+}
+
+#upravit {
+    width: 26px !important;
+    height: 24px !important;
+    cursor: pointer;
+    margin: 2px 0 0 2px;
+}
+
+.tlacitko {
+    width: auto;
+    padding: 0 15px;
+}
+
+#kod,
+#nastaveni {
+    background-color: var(--tmave-fialova);
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: 0.1s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#kod:hover {
+    background-color: var(--fialova);
+}
+
+#kod div {
+    font-size: 2rem;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+#kod div span {
+    font-weight: 500;
+}
+
+#kod img {
+    width: 30px;
+    height: 30px;
+    position: relative;
+    top: 4px;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+#kod img:hover {
+    transform: scale(1.1);
+}
+
+#dashboard {
+    width: 100%;
+    margin: 20px 0 40px 0;
+    display: flex;
+    gap: 30px;
+}
+
+#pulic {
+    display: flex;
+    justify-content: space-between;
+    width: 120%;
+}
+
+#kontejner {
+    width: calc(50% - 15px);
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+}
+
+.detail {
+    width: calc(50% - 15px);
+    height: 400px;
+    background-color: var(--tmave-fialova);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 15px;
+}
+
+.detail h3 {
+    font-size: 1.1rem;
+    text-align: start;
+}
+
+#vrsek {
+    margin-left: -8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+#vrsek img {
+    width: 110px;
+    height: 80px;
+    object-fit: cover;
+}
+
+#vrsek h2 {
+    display: flex;
+    text-wrap: nowrap;
+    width: auto;
+}
+
+#vrsek form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#ulozit {
+    transform: scale(0.8); 
+    margin-top: 5px;
+    width: 100px;
+    height: 35px;
+}
+
+#vrsek input {
+    width: 280px;
+    height: 30px;
+    background-color: var(--fialova);
+    border: 0;
+    border-radius: 5px;
+    color: var(--bila);
+    padding: 10px;
+    font-weight: normal;
+    font-size: 1em;
+}
+
+#vrsek input:focus {
+    outline: none !important;
+}
+
+.blok {
+    border-radius: 10px;
+    background-color: var(--tmave-fialova);
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: 0.1s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+}
+
+.blok:hover {
+    background-color: var(--fialova);
+}
+
+.blok h4 {
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.blok h4:hover {
+    overflow: visible;
+}
+
+.blok h3 {
+    font-weight: 400;
+}
+
+.blok span {
+    font-size: 1.3rem;
+}
+
+.blok div {
+    text-align: start;
+    width: calc(100% - 120px);
+}
+
+.oznaceny {
+    background-color: var(--fialova);
+}
 </style>

@@ -2,7 +2,7 @@
 
 </script>
 <template>
-
+    trida haha
 </template>
 <style scoped>
 

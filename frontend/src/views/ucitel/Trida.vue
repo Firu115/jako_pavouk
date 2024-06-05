@@ -3,6 +3,7 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
+import SipkaZpet from '../../components/SipkaZpet.vue';
 
 const id = useRoute().params.id
 
@@ -12,7 +13,7 @@ const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: numb
 const tab = ref("zaci")
 
 const selectnutej = ref(-1)
-const studentOznacenej = ref(ref({ jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, prumerRychlosti: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map }))
+const studentOznacenej = ref(ref({ jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, medianRychlosti: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map }))
 
 const upravaStudenta = ref(false)
 const jmenoUprava = ref()
@@ -58,7 +59,7 @@ function select(id: number) {
     if (selectnutej.value == id) { //unselect
         selectnutej.value = -1
         return
-    } 
+    }
     upravaStudenta.value = false
     selectnutej.value = id
     axios.get("/skola/student/" + id, {
@@ -82,7 +83,7 @@ function zmenaJmena(e: Event) {
         pridatOznameni("Jméno musí být 1-30 znaků dlouhé")
         upravaStudenta.value = false
         return
-    } 
+    }
     axios.post("/skola/student/", { jmeno: jmenoUprava.value, id: selectnutej.value }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
@@ -102,7 +103,10 @@ function zmenaJmena(e: Event) {
 
 </script>
 <template>
-    <h1>{{ trida.jmeno == undefined ? "Třídy" : trida.jmeno }}</h1>
+    <h1 class="nadpisSeSipkou">
+        <SipkaZpet />
+        Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
+    </h1>
     <div id="dashboard">
         <div id="nastaveni">
             <span>{{ trida.jmeno }}</span>
@@ -127,6 +131,7 @@ function zmenaJmena(e: Event) {
                 </div>
                 <span><b>{{ Math.round(st.cpm * 10) / 10 }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
+            <div v-if="studenti.length == 0" style="height: 400px; display: flex; align-items: center; justify-content: center;">Zatím žádní studenti...</div>
         </div>
         <div v-if="selectnutej != -1" class="detail">
             <div id="vrsek">
@@ -219,6 +224,7 @@ function zmenaJmena(e: Event) {
 
 #dashboard {
     width: 100%;
+    height: 90px;
     margin: 20px 0 40px 0;
     display: flex;
     gap: 30px;
@@ -279,7 +285,7 @@ function zmenaJmena(e: Event) {
 }
 
 #ulozit {
-    transform: scale(0.8); 
+    transform: scale(0.8);
     margin-top: 5px;
     width: 100px;
     height: 35px;

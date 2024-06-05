@@ -35,6 +35,10 @@ function potvrditKod(e: Event) {
             pridatOznameni("Taková třída neexistuje")
             return
         }
+        if (e.response.data.error == "Trida je zamcena") {
+            pridatOznameni("Tato třída je zamčená")
+            return
+        }
         if (!checkTeapot(e)) {
             console.log(e)
             pridatOznameni("Chyba serveru")

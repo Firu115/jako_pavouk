@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
 import SipkaZpet from '../../components/SipkaZpet.vue';
+import { moznostiRocnik, moznostiTrida } from '../../stores';
 
 const id = useRoute().params.id
 
@@ -17,6 +18,8 @@ const studentOznacenej = ref(ref({ jmeno: "...", email: "...@...", dokonceno: 0,
 
 const upravaStudenta = ref(false)
 const jmenoUprava = ref()
+const tridaJmenoUprava = ref()
+const tridaRocnikUprava = ref()
 
 onMounted(() => {
     get()
@@ -31,6 +34,10 @@ function get() {
         trida.value = response.data.trida
         studenti.value = response.data.studenti
         studenti.value.sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno))
+
+        let a = trida.value.jmeno.split(/[\. ]/)
+        tridaJmenoUprava.value = a[1]
+        tridaRocnikUprava.value = a[0] + (isNaN(+a[0]) ? " " : ".")
     }).catch(e => {
         if (!checkTeapot(e)) {
             console.log(e)
@@ -101,6 +108,24 @@ function zmenaJmena(e: Event) {
     })
 }
 
+function prejmenovatTridu(e: Event) {
+    e.preventDefault()
+
+    let staryJmeno = trida.value.jmeno
+    trida.value.jmeno = `${tridaRocnikUprava.value}${tridaJmenoUprava.value}`
+    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: `${tridaRocnikUprava.value}${tridaJmenoUprava.value}` }, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).catch(e => {
+        if (!checkTeapot(e)) {
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        }
+        trida.value.jmeno = staryJmeno
+    })
+}
+
 </script>
 <template>
     <h1 class="nadpisSeSipkou">
@@ -108,10 +133,17 @@ function zmenaJmena(e: Event) {
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
     <div id="dashboard">
-        <div id="nastaveni">
-            <span>{{ trida.jmeno }}</span>
-            <button class="tlacitko" @click="tab = 'prace'">Zadat práci</button>
-        </div>
+        <form id="nastaveni">
+            <div>
+                <select v-model="tridaRocnikUprava" style="margin-right: 10px;">
+                    <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
+                </select>
+                <select v-model="tridaJmenoUprava">
+                    <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
+                </select>
+            </div>
+            <button class="tlacitko" @click="prejmenovatTridu">Potvrdit</button>
+        </form>
         <div id="kod">
             <div>
                 <span>{{ trida.kod == undefined ? "------" : trida.kod }}</span>
@@ -131,13 +163,16 @@ function zmenaJmena(e: Event) {
                 </div>
                 <span><b>{{ Math.round(st.cpm * 10) / 10 }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
-            <div v-if="studenti.length == 0" style="height: 400px; display: flex; align-items: center; justify-content: center;">Zatím žádní studenti...</div>
+            <div v-if="studenti.length == 0"
+                style="height: 400px; display: flex; align-items: center; justify-content: center;">Zatím žádní
+                studenti...</div>
         </div>
         <div v-if="selectnutej != -1" class="detail">
             <div id="vrsek">
                 <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
                 <div v-if="!upravaStudenta">
-                    <h2>{{ studentOznacenej.jmeno }}
+                    <h2>
+                        <span>{{ studentOznacenej.jmeno }}</span>
                         <img id="upravit" @click="upravaStudenta = true; jmenoUprava = studentOznacenej.jmeno"
                             src="../../assets/icony/upravit.svg" alt="Upravit">
                     </h2>
@@ -159,6 +194,38 @@ function zmenaJmena(e: Event) {
     </div>
 </template>
 <style scoped>
+#nastaveni {
+    background-color: var(--tmave-fialova);
+    border-radius: 10px;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#nastaveni div {
+    display: flex;
+    align-items: center;
+}
+
+#nastaveni .tlacitko {
+    width: 100px;
+    margin-top: 5px;
+    align-self: center;
+}
+
+#nastaveni select {
+    border: none;
+    border-radius: 5px;
+    padding: 3px;
+    font-size: 1.3rem;
+    color: white;
+    font-family: "Red Hat Mono";
+    background-color: var(--fialova);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
 #predKliknutim {
     display: flex;
     justify-content: center;
@@ -183,8 +250,7 @@ function zmenaJmena(e: Event) {
     padding: 0 15px;
 }
 
-#kod,
-#nastaveni {
+#kod {
     background-color: var(--tmave-fialova);
     padding: 10px 15px;
     border-radius: 8px;
@@ -237,10 +303,16 @@ function zmenaJmena(e: Event) {
 }
 
 #kontejner {
-    width: calc(50% - 15px);
+    width: calc(50% - 5px);
     display: flex;
     gap: 10px;
     flex-direction: column;
+    height: 400px;
+    overflow-y: scroll;
+    padding-right: 10px;
+
+    scrollbar-gutter: stable;
+    scrollbar-width: auto; /* Can be "auto", "thin", or "none" */
 }
 
 .detail {
@@ -275,13 +347,32 @@ function zmenaJmena(e: Event) {
 #vrsek h2 {
     display: flex;
     text-wrap: nowrap;
-    width: auto;
+}
+
+#vrsek h2 span {
+    max-width: 265px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 400;
 }
 
 #vrsek form {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+#vrsek div {
+    max-width: 280px;
+}
+
+#vrsek h3 {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#vrsek h3:hover {
+    overflow: visible;
 }
 
 #ulozit {
@@ -310,7 +401,7 @@ function zmenaJmena(e: Event) {
 .blok {
     border-radius: 10px;
     background-color: var(--tmave-fialova);
-    padding: 10px 15px;
+    padding: 6px 12px;
     cursor: pointer;
     transition: 0.1s;
     display: flex;
@@ -348,5 +439,27 @@ function zmenaJmena(e: Event) {
 
 .oznaceny {
     background-color: var(--fialova);
+}
+
+::-webkit-scrollbar {
+    width: 10px; /* Width of the scrollbar */
+}
+
+/* Customizes the track of the scrollbar */
+::-webkit-scrollbar-track {
+    background: var(--tmave-fialova); /* Color of the track */
+    border-radius: 3px;
+    padding: 1px;
+}
+
+/* Customizes the thumb of the scrollbar */
+::-webkit-scrollbar-thumb {
+    background: var(--fialova); /* Color of the thumb */
+    border-radius: 3px;
+}
+
+/* Changes the thumb color on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: var(--svetle-fialova); /* Darker color on hover */
 }
 </style>

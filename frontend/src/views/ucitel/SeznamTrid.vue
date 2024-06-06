@@ -2,8 +2,10 @@
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
+import { moznostiRocnik, moznostiTrida } from '../../stores';
 
-const rocniky = ref({ string: [] as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number }[] })
+type Trida = { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number }
+const rocniky = ref(new Map<string, Trida[]>())
 const pridavani = ref(false)
 
 const rocnik = ref("1.")
@@ -19,7 +21,9 @@ function get() {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(response => {
-        rocniky.value = response.data.tridy
+        Object.keys(response.data.tridy).forEach(key => {
+            rocniky.value.set(key, response.data.tridy[key].sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno)))
+        })
     }).catch(e => {
         if (!checkTeapot(e)) {
             console.log(e)
@@ -49,9 +53,9 @@ function vytvorit(e: Event) {
 </script>
 <template>
     <h1>Třídy</h1>
-    <div id="rocniky" v-if="!pridavani && Object.keys(rocniky).length != 0">
-        <div v-for="tridy, i in rocniky" class="rocnik">
-            <h2 v-if="i != 'string'">{{ i }}. ročník</h2>
+    <div id="rocniky" v-if="!pridavani && rocniky.size !== 0">
+        <div v-for="[rocnik, tridy] in rocniky" class="rocnik">
+            <h2>{{ rocnik }}{{ isNaN(+rocnik) ? "" : ". ročník" }}</h2>
             <div id="kontejner">
                 <div class="blok" v-for="t in tridy" @click="$router.push('/skola/' + t.id)">
                     <h3>{{ t.jmeno }}
@@ -76,32 +80,11 @@ function vytvorit(e: Event) {
             <div>
                 <h3>Ročník:</h3>
                 <select v-model="rocnik" style="margin-right: 10px;">
-                    <option value="1.">1.</option>
-                    <option value="2.">2.</option>
-                    <option value="3.">3.</option>
-                    <option value="4.">4.</option>
-                    <option value="5.">5.</option>
-                    <option value="6.">6.</option>
-                    <option value="7.">7.</option>
-                    <option value="8.">8.</option>
-                    <option value="9.">9.</option>
-                    <option value="Prima ">Prima</option>
-                    <option value="Sekunda ">Sekunda</option>
-                    <option value="Tercie ">Tercie</option>
-                    <option value="Kvarta ">Kvarta</option>
-                    <option value="Kvinta ">Kvinta</option>
-                    <option value="Sexta ">Sexta</option>
-                    <option value="Septima ">Septima</option>
-                    <option value="Oktáva ">Oktáva</option>
+                    <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
                 </select>
                 <h3>Třída:</h3>
                 <select v-model="trida">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
+                    <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
                 </select>
             </div>
             <button class="tlacitko" @click="vytvorit">Vytvořit</button>
@@ -163,7 +146,7 @@ function vytvorit(e: Event) {
     border-radius: 100%;
     width: 55px;
     height: 55px;
-    position: absolute;
+    position: fixed;
     right: 30px;
     bottom: 25px;
     display: flex;

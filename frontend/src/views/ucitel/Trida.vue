@@ -5,6 +5,9 @@ import { useRoute } from 'vue-router';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
 import SipkaZpet from '../../components/SipkaZpet.vue';
 import { moznostiRocnik, moznostiTrida } from '../../stores';
+import ZadaniPrace from '../../components/ZadaniPrace.vue';
+import router from '../../router';
+import { useHead } from '@unhead/vue';
 
 const id = useRoute().params.id
 
@@ -38,11 +41,19 @@ function get() {
         let a = trida.value.jmeno.split(/[\. ]/)
         tridaJmenoUprava.value = a[1]
         tridaRocnikUprava.value = a[0] + (isNaN(+a[0]) ? " " : ".")
+
+        useHead({
+            title: trida.value.jmeno
+        })
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
+        if (checkTeapot(e)) return
+        if (e.response.data.error == "sql: no rows in result set") {
+            pridatOznameni("Taková třída neexistuje")
+            router.push("/skola")
+            return
         }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
     })
 }
 
@@ -138,18 +149,23 @@ function copy() {
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
     <div id="dashboard">
-        <div id="zadatPraci">
+        <div v-if="tab == 'zaci'" id="prepinacTabu">
             <h2>Zadat práci</h2>
-            <button class="tlacitko">Práce</button>
+            <button class="tlacitko" @click="tab = 'prace'">Práce</button>
+        </div>
+        <div v-else id="prepinacTabu">
+            <h2>Zobrazit žáky</h2>
+            <button class="tlacitko" @click="tab = 'zaci'">Zpět</button>
         </div>
         <div id="kod">
             <div>
-                <span @click="copy">{{ trida.kod == undefined ? "------" : trida.kod }}</span>
+                <span @click="copy" :class="{ zamknutyKod: trida.zamknuta }">{{ trida.kod == undefined ? "------" :
+                    trida.kod }}</span>
                 <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída"
                     @click="zamek()">
                 <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
             </div>
-            <span>jakopavouk.cz/zapis/{{ trida.kod }}</span>
+            <span :class="{ zamknutyKod: trida.zamknuta }">jakopavouk.cz/zapis/{{ trida.kod }}</span>
         </div>
         <form id="nastaveni">
             <div>
@@ -179,7 +195,7 @@ function copy() {
         </div>
         <div v-if="selectnutej != -1" class="detail">
             <div id="vrsek">
-                <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
+                <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk" width="200" height="126">
                 <div v-if="!upravaStudenta">
                     <h2>
                         <span>{{ studentOznacenej.jmeno }}</span>
@@ -202,8 +218,14 @@ function copy() {
             <h2>Vyber studenta!</h2>
         </div>
     </div>
+    <ZadaniPrace v-else-if="tab == 'prace'" />
 </template>
 <style scoped>
+.zamknutyKod {
+    color: rgba(255, 255, 255, 0.3);
+    text-decoration: line-through;
+}
+
 #nastaveni {
     background-color: var(--tmave-fialova);
     border-radius: 10px;
@@ -219,7 +241,7 @@ function copy() {
 }
 
 #nastaveni .tlacitko,
-#zadatPraci .tlacitko {
+#prepinacTabu .tlacitko {
     width: 100px;
     margin-top: 5px;
     align-self: center;
@@ -261,7 +283,7 @@ function copy() {
     padding: 0 15px;
 }
 
-#zadatPraci {
+#prepinacTabu {
     background-color: var(--tmave-fialova);
     padding: 10px 15px;
     border-radius: 10px;
@@ -278,6 +300,7 @@ function copy() {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    width: 250px;
 }
 
 #kod div {
@@ -324,11 +347,11 @@ function copy() {
 #pulic {
     display: flex;
     justify-content: space-between;
-    width: 120%;
+    width: 860px;
 }
 
 #kontejner {
-    width: calc(50% - 5px);
+    width: 430px;
     display: flex;
     gap: 10px;
     flex-direction: column;
@@ -338,11 +361,10 @@ function copy() {
 
     scrollbar-gutter: stable;
     scrollbar-width: auto;
-    /* Can be "auto", "thin", or "none" */
 }
 
 .detail {
-    width: calc(50% - 15px);
+    width: 410px;
     height: 400px;
     background-color: var(--tmave-fialova);
     border-radius: 10px;
@@ -444,6 +466,7 @@ function copy() {
     font-size: 0.9rem;
     text-overflow: ellipsis;
     overflow: hidden;
+    text-wrap: nowrap;
 }
 
 .blok h4:hover {
@@ -451,6 +474,7 @@ function copy() {
 }
 
 .blok h3 {
+    text-wrap: nowrap;
     font-weight: 400;
 }
 

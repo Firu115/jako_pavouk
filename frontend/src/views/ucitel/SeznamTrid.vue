@@ -3,6 +3,7 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
 import { moznostiRocnik, moznostiTrida } from '../../stores';
+import { useHead } from '@unhead/vue';
 
 type Trida = { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number }
 const rocniky = ref(new Map<string, Trida[]>())
@@ -10,6 +11,10 @@ const pridavani = ref(false)
 
 const rocnik = ref("1.")
 const trida = ref("A")
+
+useHead({
+    title: "Seznam tříd"
+})
 
 onMounted(() => {
     get()

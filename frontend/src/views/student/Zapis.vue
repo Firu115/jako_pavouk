@@ -57,7 +57,7 @@ function zapsatSe(e: Event) {
     }).catch(e => {
         if (!checkTeapot(e)) {
             if (e.response.data.error == "Uz jsi ve tride") {
-                pridatOznameni("Už jsi v jedné třídě")
+                pridatOznameni("Už jsi ve třídě")
                 return
             }
             console.log(e)

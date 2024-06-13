@@ -126,6 +126,11 @@ function prejmenovatTridu(e: Event) {
     })
 }
 
+function copy() {
+    navigator.clipboard.writeText(trida.value.kod)
+    pridatOznameni("Zkopírováno!", undefined, "copy")
+}
+
 </script>
 <template>
     <h1 class="nadpisSeSipkou">
@@ -133,6 +138,19 @@ function prejmenovatTridu(e: Event) {
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
     <div id="dashboard">
+        <div id="zadatPraci">
+            <h2>Zadat práci</h2>
+            <button class="tlacitko">Práce</button>
+        </div>
+        <div id="kod">
+            <div>
+                <span @click="copy">{{ trida.kod == undefined ? "------" : trida.kod }}</span>
+                <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída"
+                    @click="zamek()">
+                <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
+            </div>
+            <span>jakopavouk.cz/zapis/{{ trida.kod }}</span>
+        </div>
         <form id="nastaveni">
             <div>
                 <select v-model="tridaRocnikUprava" style="margin-right: 10px;">
@@ -142,17 +160,9 @@ function prejmenovatTridu(e: Event) {
                     <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
                 </select>
             </div>
-            <button class="tlacitko" @click="prejmenovatTridu">Potvrdit</button>
+            <button class="tlacitko" @click="prejmenovatTridu"
+                :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}` == trida.jmeno">Potvrdit</button>
         </form>
-        <div id="kod">
-            <div>
-                <span>{{ trida.kod == undefined ? "------" : trida.kod }}</span>
-                <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída"
-                    @click="zamek()">
-                <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
-            </div>
-            <span>jakopavouk.cz/zapis/{{ trida.kod }}</span>
-        </div>
     </div>
     <div v-if="tab == 'zaci'" id="pulic">
         <div id="kontejner">
@@ -208,7 +218,8 @@ function prejmenovatTridu(e: Event) {
     align-items: center;
 }
 
-#nastaveni .tlacitko {
+#nastaveni .tlacitko,
+#zadatPraci .tlacitko {
     width: 100px;
     margin-top: 5px;
     align-self: center;
@@ -250,6 +261,15 @@ function prejmenovatTridu(e: Event) {
     padding: 0 15px;
 }
 
+#zadatPraci {
+    background-color: var(--tmave-fialova);
+    padding: 10px 15px;
+    border-radius: 10px;
+    width: 196px;
+    display: flex;
+    flex-direction: column;
+}
+
 #kod {
     background-color: var(--tmave-fialova);
     padding: 10px 15px;
@@ -260,19 +280,23 @@ function prejmenovatTridu(e: Event) {
     justify-content: space-around;
 }
 
-#kod:hover {
-    background-color: var(--fialova);
-}
-
 #kod div {
     font-size: 2rem;
     display: flex;
-    gap: 10px;
+    gap: 5px;
     justify-content: center;
 }
 
 #kod div span {
     font-weight: 500;
+    padding: 0 6px;
+    transition: 0.2s;
+}
+
+#kod div span:hover {
+    background-color: var(--fialova);
+    border-radius: 8px;
+    cursor: grab;
 }
 
 #kod img {
@@ -294,6 +318,7 @@ function prejmenovatTridu(e: Event) {
     margin: 20px 0 40px 0;
     display: flex;
     gap: 30px;
+    justify-content: center;
 }
 
 #pulic {
@@ -312,7 +337,8 @@ function prejmenovatTridu(e: Event) {
     padding-right: 10px;
 
     scrollbar-gutter: stable;
-    scrollbar-width: auto; /* Can be "auto", "thin", or "none" */
+    scrollbar-width: auto;
+    /* Can be "auto", "thin", or "none" */
 }
 
 .detail {
@@ -442,24 +468,28 @@ function prejmenovatTridu(e: Event) {
 }
 
 ::-webkit-scrollbar {
-    width: 10px; /* Width of the scrollbar */
+    width: 10px;
+    /* Width of the scrollbar */
 }
 
 /* Customizes the track of the scrollbar */
 ::-webkit-scrollbar-track {
-    background: var(--tmave-fialova); /* Color of the track */
+    background: var(--tmave-fialova);
+    /* Color of the track */
     border-radius: 3px;
     padding: 1px;
 }
 
 /* Customizes the thumb of the scrollbar */
 ::-webkit-scrollbar-thumb {
-    background: var(--fialova); /* Color of the thumb */
+    background: var(--fialova);
+    /* Color of the thumb */
     border-radius: 3px;
 }
 
 /* Changes the thumb color on hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--svetle-fialova); /* Darker color on hover */
+    background: var(--svetle-fialova);
+    /* Darker color on hover */
 }
 </style>

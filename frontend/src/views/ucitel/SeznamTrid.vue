@@ -2,8 +2,11 @@
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
-import { moznostiRocnik, moznostiTrida } from '../../stores';
+import { moznostiRocnik, moznostiTrida, prihlasen } from '../../stores';
 import { useHead } from '@unhead/vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 type Trida = { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number }
 const rocniky = ref(new Map<string, Trida[]>())
@@ -17,6 +20,9 @@ useHead({
 })
 
 onMounted(() => {
+    if (!prihlasen.value) {
+        router.push("/")
+    }
     get()
 })
 

@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
 import SipkaZpet from '../../components/SipkaZpet.vue';
-import { moznostiRocnik, moznostiTrida } from '../../stores';
+import { moznostiRocnik, moznostiTrida, prihlasen } from '../../stores';
 import ZadaniPrace from '../../components/ZadaniPrace.vue';
 import router from '../../router';
 import { useHead } from '@unhead/vue';
@@ -14,7 +14,7 @@ const id = useRoute().params.id
 const trida = ref({} as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number })
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
 
-const tab = ref("zaci")
+const tab = ref("zaci") // zaci, prace, zadani
 
 const selectnutej = ref(-1)
 const studentOznacenej = ref(ref({ jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, medianRychlosti: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map }))
@@ -25,6 +25,9 @@ const tridaJmenoUprava = ref()
 const tridaRocnikUprava = ref()
 
 onMounted(() => {
+    if (!prihlasen.value) {
+        router.push("/")
+    }
     get()
 })
 
@@ -161,13 +164,12 @@ function copy() {
             <div>
                 <span @click="copy" :class="{ zamknutyKod: trida.zamknuta }">{{ trida.kod == undefined ? "------" :
                     trida.kod }}</span>
-                <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída"
-                    @click="zamek()">
+                <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída" @click="zamek()">
                 <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
             </div>
             <span :class="{ zamknutyKod: trida.zamknuta }">jakopavouk.cz/zapis/{{ trida.kod }}</span>
         </div>
-        <form id="nastaveni">
+        <form id="upravaTridy">
             <div>
                 <select v-model="tridaRocnikUprava" style="margin-right: 10px;">
                     <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
@@ -176,8 +178,7 @@ function copy() {
                     <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
                 </select>
             </div>
-            <button class="tlacitko" @click="prejmenovatTridu"
-                :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}` == trida.jmeno">Potvrdit</button>
+            <button class="tlacitko" @click="prejmenovatTridu" :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}` == trida.jmeno">Potvrdit</button>
         </form>
     </div>
     <div v-if="tab == 'zaci'" id="pulic">
@@ -189,8 +190,7 @@ function copy() {
                 </div>
                 <span><b>{{ Math.round(st.cpm * 10) / 10 }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
-            <div v-if="studenti.length == 0"
-                style="height: 400px; display: flex; align-items: center; justify-content: center;">Zatím žádní
+            <div v-if="studenti.length == 0" style="height: 400px; display: flex; align-items: center; justify-content: center;">Zatím žádní
                 studenti...</div>
         </div>
         <div v-if="selectnutej != -1" class="detail">
@@ -199,8 +199,8 @@ function copy() {
                 <div v-if="!upravaStudenta">
                     <h2>
                         <span>{{ studentOznacenej.jmeno }}</span>
-                        <img id="upravit" @click="upravaStudenta = true; jmenoUprava = studentOznacenej.jmeno"
-                            src="../../assets/icony/upravit.svg" alt="Upravit">
+                        <img id="upravit" @click="upravaStudenta = true; jmenoUprava = studentOznacenej.jmeno" src="../../assets/icony/upravit.svg"
+                            alt="Upravit">
                     </h2>
                     <h3>{{ studentOznacenej.email }}</h3>
                 </div>
@@ -218,15 +218,40 @@ function copy() {
             <h2>Vyber studenta!</h2>
         </div>
     </div>
-    <ZadaniPrace v-else-if="tab == 'prace'" />
+
+    <ZadaniPrace v-else-if="tab == 'zadani'" />
+
+    <div v-if="tab != 'zaci'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')" :style="{ transform: tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">
+        <img src="../../assets/icony/plus.svg" alt="Přidat">
+    </div>
 </template>
 <style scoped>
+#pridat {
+    background-color: var(--tmave-fialova);
+    border-radius: 100%;
+    width: 55px;
+    height: 55px;
+    position: fixed;
+    right: 30px;
+    bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.3s;
+}
+
+#pridat:hover {
+    background-color: var(--fialova);
+}
+
 .zamknutyKod {
     color: rgba(255, 255, 255, 0.3);
     text-decoration: line-through;
 }
 
-#nastaveni {
+#upravaTridy {
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 10px 15px;
@@ -235,19 +260,19 @@ function copy() {
     gap: 5px;
 }
 
-#nastaveni div {
+#upravaTridy div {
     display: flex;
     align-items: center;
 }
 
-#nastaveni .tlacitko,
+#upravaTridy .tlacitko,
 #prepinacTabu .tlacitko {
     width: 100px;
     margin-top: 5px;
     align-self: center;
 }
 
-#nastaveni select {
+#upravaTridy select {
     border: none;
     border-radius: 5px;
     padding: 3px;
@@ -257,6 +282,15 @@ function copy() {
     background-color: var(--fialova);
     cursor: pointer;
     transition: 0.2s;
+}
+
+#upravaTridy select:hover {
+    background-color: var(--svetle-fialova);
+}
+
+#upravaTridy select option {
+    font-family: "Red Hat Mono";
+    background-color: var(--fialova) !important;
 }
 
 #predKliknutim {
@@ -383,7 +417,6 @@ function copy() {
     display: flex;
     align-items: center;
     gap: 5px;
-    flex-wrap: wrap;
 }
 
 #vrsek img {

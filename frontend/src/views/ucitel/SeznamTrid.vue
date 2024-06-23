@@ -20,7 +20,7 @@ useHead({
 })
 
 onMounted(() => {
-    if (!prihlasen.value) {
+    if (!prihlasen.value && getToken() == null) {
         router.push("/")
     }
     get()

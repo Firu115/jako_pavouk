@@ -382,14 +382,15 @@ function copy() {
     display: flex;
     justify-content: space-between;
     width: 860px;
+    margin-bottom: -50px; /* countruju view margin */
 }
 
 #kontejner {
     width: 430px;
     display: flex;
     gap: 10px;
+    height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px);
     flex-direction: column;
-    height: 400px;
     overflow-y: scroll;
     padding-right: 10px;
 

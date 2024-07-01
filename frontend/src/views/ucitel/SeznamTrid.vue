@@ -36,10 +36,13 @@ function get() {
             rocniky.value.set(key, response.data.tridy[key].sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno)))
         })
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
+        if (checkTeapot(e)) return
+        if (e.response.status == 401) {
+            pridatOznameni("Sem nemáš přístup")
+            return
         }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
     })
 }
 
@@ -105,8 +108,7 @@ function vytvorit(e: Event) {
         Zatím tu žádné nejsou!
     </div>
 
-    <div id="pridat" @click="pridavani = !pridavani"
-        :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">
+    <div id="pridat" @click="pridavani = !pridavani" :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">
         <img src="../../assets/icony/plus.svg" alt="Přidat">
     </div>
 </template>

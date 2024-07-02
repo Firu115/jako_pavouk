@@ -147,18 +147,16 @@ function copy() {
 
 </script>
 <template>
-    <h1 class="nadpisSeSipkou">
+    <h1 class="nadpisSeSipkou" style="margin: 0; direction: ltr;">
         <SipkaZpet />
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
     <div id="dashboard">
         <div v-if="tab == 'zaci'" id="prepinacTabu">
-            <h2>Zadat práci</h2>
             <button class="tlacitko" @click="tab = 'prace'">Práce</button>
         </div>
         <div v-else id="prepinacTabu">
-            <h2>Zobrazit žáky</h2>
-            <button class="tlacitko" @click="tab = 'zaci'">Zpět</button>
+            <button class="tlacitko" @click="tab = 'zaci'">Žáci</button>
         </div>
         <div id="kod">
             <div>
@@ -240,6 +238,7 @@ function copy() {
     padding: 13px;
     cursor: pointer;
     transition: background-color 0.15s, transform 0.3s;
+    z-index: 10;
 }
 
 #pridat:hover {
@@ -389,7 +388,7 @@ function copy() {
     width: 430px;
     display: flex;
     gap: 10px;
-    height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px);
+    height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px); /* celá obrazovka - všechno co je nad seznamem zaku */
     flex-direction: column;
     overflow-y: scroll;
     padding-right: 10px;
@@ -400,7 +399,7 @@ function copy() {
 
 .detail {
     width: 410px;
-    height: 400px;
+    height: 380px;
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     display: flex;

@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
 import SipkaZpet from '../../components/SipkaZpet.vue';
-import { moznostiRocnik, moznostiTrida, prihlasen } from '../../stores';
+import { moznostiRocnik, moznostiTrida } from '../../stores';
 import ZadaniPrace from '../../components/ZadaniPrace.vue';
 import router from '../../router';
 import { useHead } from '@unhead/vue';
@@ -25,9 +25,6 @@ const tridaJmenoUprava = ref()
 const tridaRocnikUprava = ref()
 
 onMounted(() => {
-    if (!prihlasen.value) {
-        router.push("/")
-    }
     get()
 })
 
@@ -239,6 +236,7 @@ function copy() {
     cursor: pointer;
     transition: background-color 0.15s, transform 0.3s;
     z-index: 10;
+    box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.75);
 }
 
 #pridat:hover {
@@ -327,7 +325,7 @@ function copy() {
 
 #kod {
     background-color: var(--tmave-fialova);
-    padding: 10px 15px;
+    padding: 10px;
     border-radius: 8px;
     transition: 0.1s;
     display: flex;

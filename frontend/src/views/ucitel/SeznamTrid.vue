@@ -15,6 +15,8 @@ const pridavani = ref(false)
 const rocnik = ref("1.")
 const trida = ref("A")
 
+const nacitam = ref(true)
+
 useHead({
     title: "Seznam tříd"
 })
@@ -43,6 +45,8 @@ function get() {
         }
         console.log(e)
         pridatOznameni("Chyba serveru")
+    }).finally(() => {
+        nacitam.value = false
     })
 }
 
@@ -79,8 +83,7 @@ function vytvorit(e: Event) {
 
                     <div class="statistiky">
                         <span v-if="t.pocet_studentu == 1"><b>{{ t.pocet_studentu }}</b> student</span>
-                        <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b>
-                            studenti</span>
+                        <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b> studenti</span>
                         <span v-else><b>{{ t.pocet_studentu }}</b> studentů</span>
                     </div>
                 </div>
@@ -103,6 +106,9 @@ function vytvorit(e: Event) {
             </div>
             <button class="tlacitko" @click="vytvorit">Vytvořit</button>
         </form>
+    </div>
+    <div v-else-if="rocniky.size === 0 && nacitam">
+        Načítám...
     </div>
     <div v-else>
         Zatím tu žádné nejsou!
@@ -168,6 +174,7 @@ function vytvorit(e: Event) {
     padding: 13px;
     cursor: pointer;
     transition: background-color 0.15s, transform 0.3s;
+    box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.75);
 }
 
 #pridat:hover {

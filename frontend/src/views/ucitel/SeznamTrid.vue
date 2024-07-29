@@ -8,7 +8,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter()
 
-type Trida = { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number }
+type Trida = { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number, pocet_praci: number }
 const rocniky = ref(new Map<string, Trida[]>())
 const pridavani = ref(false)
 
@@ -85,6 +85,9 @@ function vytvorit(e: Event) {
                         <span v-if="t.pocet_studentu == 1"><b>{{ t.pocet_studentu }}</b> student</span>
                         <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b> studenti</span>
                         <span v-else><b>{{ t.pocet_studentu }}</b> studentů</span>
+
+                        <span v-if="t.pocet_praci <= 4"><b>{{ t.pocet_praci }}</b> práce</span>
+                        <span v-else><b>{{ t.pocet_praci }}</b> prací</span>
                     </div>
                 </div>
             </div>
@@ -206,7 +209,7 @@ function vytvorit(e: Event) {
     padding: 10px 15px;
     cursor: pointer;
     transition: 0.1s;
-    width: 30%;
+    width: max(30%, 200px);
     position: relative;
 }
 

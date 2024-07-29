@@ -11,7 +11,10 @@ import { useHead } from '@unhead/vue';
 
 const id = useRoute().params.id
 
+type Prace = { id: number, text: string, cas: number, datum: string, prumer_cpm: number }
+
 const trida = ref({} as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number })
+const prace = ref([] as Prace[])
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
 
 const tab = ref("zaci") // zaci, prace, zadani
@@ -38,6 +41,14 @@ function get() {
         studenti.value = response.data.studenti
         studenti.value.sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno))
 
+        prace.value = []
+        for (let i = 0; i < response.data.prace.length; i++) {
+            const prace1 = response.data.prace[i]
+            let p: Prace = { id: prace1.id, text: prace1.text, cas: prace1.cas, datum: new Date(prace1.datum).toLocaleDateString(), prumer_cpm: 0 }
+            prace.value.push(p)
+        }
+        prace.value.sort((a: any, b: any) => b.datum.localeCompare(a.datum))
+
         let a = trida.value.jmeno.split(/[\. ]/)
         tridaJmenoUprava.value = a[1]
         tridaRocnikUprava.value = a[0] + (isNaN(+a[0]) ? " " : ".")
@@ -52,7 +63,6 @@ function get() {
             router.push("/skola")
             return
         }
-        console.log(e)
         pridatOznameni("Chyba serveru")
     })
 }
@@ -97,6 +107,11 @@ function select(id: number) {
 
 function zmenaJmena(e: Event) {
     e.preventDefault()
+    if (jmenoUprava.value == studentOznacenej.value.jmeno) {
+        upravaStudenta.value = false
+        return
+    }
+
     if (jmenoUprava.value == "" || jmenoUprava.value.length > 30) {
         pridatOznameni("Jméno musí být 1-30 znaků dlouhé")
         upravaStudenta.value = false
@@ -142,12 +157,18 @@ function copy() {
     pridatOznameni("Zkopírováno!", undefined, "copy")
 }
 
+function zadano() {
+    tab.value = 'prace'
+    get()
+}
+
 </script>
 <template>
     <h1 class="nadpisSeSipkou" style="margin: 0; direction: ltr;">
         <SipkaZpet />
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
+
     <div id="dashboard">
         <div v-if="tab == 'zaci'" id="prepinacTabu">
             <button class="tlacitko" @click="tab = 'prace'">Práce</button>
@@ -176,6 +197,7 @@ function copy() {
             <button class="tlacitko" @click="prejmenovatTridu" :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}` == trida.jmeno">Potvrdit</button>
         </form>
     </div>
+
     <div v-if="tab == 'zaci'" id="pulic">
         <div id="kontejner">
             <div v-for="st in studenti" class="blok" @click="select(st.id)" :class="{ oznaceny: selectnutej == st.id }">
@@ -185,8 +207,7 @@ function copy() {
                 </div>
                 <span><b>{{ Math.round(st.cpm * 10) / 10 }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
-            <div v-if="studenti.length == 0" style="height: 400px; display: flex; align-items: center; justify-content: center;">Zatím žádní
-                studenti...</div>
+            <div v-if="studenti.length == 0" id="textZaci">Tady uvidíte všechny žáky... <br>Sdělte jim kód nahoře.</div>
         </div>
         <div v-if="selectnutej != -1" class="detail">
             <div id="vrsek">
@@ -210,17 +231,72 @@ function copy() {
         </div>
         <div v-else class="detail" id="predKliknutim">
             <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
-            <h2>Vyber studenta!</h2>
+            <h2 v-if="studenti.length != 0">Vyberte studenta!</h2>
         </div>
     </div>
 
-    <ZadaniPrace v-else-if="tab == 'zadani'" />
+    <div v-else-if="tab == 'prace'" id="praceKontejner">
+        <div v-for="v, i in prace" class="prace">
+            <div class="nadpisPrace">
+                <h2>Práce {{ prace.length - i }}</h2>
+                <h3>{{ v.datum }}</h3>
+            </div>
+            <span>{{ v.prumer_cpm }} CPM</span>
+        </div>
+        <span v-if="prace.length == 0" id="textZaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
+    </div>
 
-    <div v-if="tab != 'zaci'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')" :style="{ transform: tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">
+    <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" />
+
+    <div v-if="tab != 'zaci'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')"
+        :style="{ transform: tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">
         <img src="../../assets/icony/plus.svg" alt="Přidat">
     </div>
 </template>
 <style scoped>
+#textZaci {
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#praceKontejner {
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.prace {
+    background-color: var(--tmave-fialova);
+    border-radius: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: 0.1s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+}
+
+.nadpisPrace {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+}
+
+.nadpisPrace h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.nadpisPrace h3 {
+    font-size: 1.1rem;
+    font-weight: 200;
+    margin: 0;
+}
+
 #pridat {
     background-color: var(--tmave-fialova);
     border-radius: 100%;
@@ -379,14 +455,16 @@ function copy() {
     display: flex;
     justify-content: space-between;
     width: 860px;
-    margin-bottom: -50px; /* countruju view margin */
+    margin-bottom: -50px;
+    /* countruju view margin */
 }
 
 #kontejner {
     width: 430px;
     display: flex;
     gap: 10px;
-    height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px); /* celá obrazovka - všechno co je nad seznamem zaku */
+    height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px);
+    /* celá obrazovka - všechno co je nad seznamem zaku */
     flex-direction: column;
     overflow-y: scroll;
     padding-right: 10px;
@@ -506,7 +584,7 @@ function copy() {
 
 .blok h3 {
     text-wrap: nowrap;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 .blok span {

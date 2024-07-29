@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
 import axios from 'axios';
+import { role } from '../../stores';
 
 const router = useRouter()
 
@@ -54,6 +55,7 @@ function zapsatSe(e: Event) {
         }
     }).then(_ => {
         router.push("/trida")
+        role.value = "student"
     }).catch(e => {
         if (!checkTeapot(e)) {
             if (e.response.data.error == "Uz jsi ve tride") {

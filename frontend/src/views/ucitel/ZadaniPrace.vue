@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import TextZadani from '../components/TextZadani.vue';
+import TextZadani from './TextZadani.vue';
 import axios from 'axios';
-import { checkTeapot, getToken, pridatOznameni } from '../utils';
-import Tooltip from "../components/Tooltip.vue";
+import { checkTeapot, getToken, pridatOznameni } from '../../utils';
+import Tooltip from "../../components/Tooltip.vue";
 
 const props = defineProps({
     tridaID: Number,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from 'axios';
-import { checkTeapot, getToken, pridatOznameni } from '../../utils';
+import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from '../../utils';
 import { onMounted, ref } from 'vue';
 import { useHead } from "unhead"
 import router from '../../router';
@@ -76,8 +76,8 @@ function get() {
                     <h4>{{ v.datum }}</h4>
                 </div>
                 <div class="statistika">
-                    <span><b>{{ Math.round(v.cpm * 10) / 10 }}</b> CPM</span>
-                    <span><b>{{ Math.round(v.presnost * 10) / 10 }}</b> %</span>
+                    <span><b>{{ naJednoDesetiny(v.cpm) }}</b> CPM</span>
+                    <span><b>{{ naJednoDesetiny(v.presnost) }}</b> %</span>
                 </div>
             </div>
         </div>

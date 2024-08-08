@@ -2,10 +2,10 @@
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { checkTeapot, getToken, pridatOznameni } from '../../utils';
+import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from '../../utils';
 import SipkaZpet from '../../components/SipkaZpet.vue';
 import { moznostiRocnik, moznostiTrida } from '../../stores';
-import ZadaniPrace from '../../components/ZadaniPrace.vue';
+import ZadaniPrace from './ZadaniPrace.vue';
 import router from '../../router';
 import { useHead } from '@unhead/vue';
 
@@ -205,7 +205,7 @@ function zadano() {
                     <h3>{{ st.jmeno }}</h3>
                     <h4>{{ st.email }}</h4>
                 </div>
-                <span><b>{{ Math.round(st.cpm * 10) / 10 }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
+                <span><b>{{ naJednoDesetiny(st.cpm) }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
             <div v-if="studenti.length == 0" id="textZaci">Tady uvidíte všechny žáky... <br>Sdělte jim kód nahoře.</div>
         </div>

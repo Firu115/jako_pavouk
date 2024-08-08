@@ -29,7 +29,6 @@ function get() {
         trida.value = response.data.trida
 
         praceNove.value = []
-        console.log(response.data.prace[0].datum)
         response.data.prace.sort((a: any, b: any) => b.datum.localeCompare(a.datum))
         for (let i = 0; i < response.data.prace.length; i++) {
             const prace1 = response.data.prace[i]
@@ -83,7 +82,7 @@ function get() {
         </div>
     </div>
 
-    <span v-if="praceNove.length == 0 && !nacitam" id="textZaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
+    <span v-if="praceNove.length == 0 && !nacitam" id="textZaci">Zatím tu nejsou žádné zadané práce.</span>
 </template>
 <style scoped>
 .statistika span b {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import TextZadani from './TextZadani.vue';
 import axios from 'axios';
 import { checkTeapot, getToken, pridatOznameni } from '../../utils';
@@ -15,6 +15,21 @@ const textovePole = ref<InstanceType<typeof TextZadani> | null>(null)
 
 const delka = ref(5 * 60)
 const typTextu = ref("")
+
+const texty = ref(["Věty z pohádek"] as string[])
+
+onMounted(() => {
+    axios.get("/procvic").then(response => {
+        response.data.texty.forEach((el: {"jmeno": string}) => {
+            texty.value.push(el.jmeno)
+        })
+        texty.value.sort()
+    }).catch(e => {
+        if (checkTeapot(e)) return
+        console.log(e)
+        pridatOznameni("Chyba serveru")
+    })
+})
 
 function getText() {
     if (typTextu.value == "") return
@@ -130,10 +145,7 @@ function resetSmazanych() {
                 </span>
                 <select v-model="typTextu" @change="getText">
                     <option value="" selected>Vlastní text</option>
-                    <option value="Věty z pohádek">Věty z pohádek</option>
-                    <option value="Pohádky">Pohádky</option>
-                    <option value="Zeměpis">Zeměpis</option>
-                    <option value="Dějepis">Dějepis</option>
+                    <option v-for="t in texty" :value="t">{{ t }}</option>
                 </select>
             </div>
 

@@ -11,7 +11,7 @@ import { useHead } from '@unhead/vue';
 
 const id = useRoute().params.id
 
-type Prace = { id: number, text: string, cas: number, datum: string, prumer_cpm: number }
+type Prace = { id: number, text: string, cas: number, datum: Date, prumer_cpm: number }
 
 const trida = ref({} as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number })
 const prace = ref([] as Prace[])
@@ -44,10 +44,10 @@ function get() {
         prace.value = []
         for (let i = 0; i < response.data.prace.length; i++) {
             const prace1 = response.data.prace[i]
-            let p: Prace = { id: prace1.id, text: prace1.text, cas: prace1.cas, datum: new Date(prace1.datum).toLocaleDateString(), prumer_cpm: 0 }
+            let p: Prace = { id: prace1.id, text: prace1.text, cas: prace1.cas, datum: new Date(prace1.datum), prumer_cpm: 0 }
             prace.value.push(p)
         }
-        prace.value.sort((a: any, b: any) => b.datum.localeCompare(a.datum))
+        prace.value.sort((a: any, b: any) => b.datum.getTime() - a.datum.getTime())
 
         let a = trida.value.jmeno.split(/[\. ]/)
         tridaJmenoUprava.value = a[1]
@@ -239,7 +239,7 @@ function zadano() {
         <div v-for="v, i in prace" class="prace">
             <div class="nadpisPrace">
                 <h2>Práce {{ prace.length - i }}</h2>
-                <h3>{{ v.datum }}</h3>
+                <h3>{{ v.datum.toLocaleDateString() }}</h3>
             </div>
             <span>{{ v.prumer_cpm }} CPM</span>
         </div>

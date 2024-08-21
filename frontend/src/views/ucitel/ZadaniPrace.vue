@@ -78,16 +78,19 @@ function d(x: number) {
 const puvodniText = ref("")
 
 function smazatDiakritiku() {
+    if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
 }
 
 function smazatVelkaPismena() {
+    if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.toLocaleLowerCase()
 }
 
 function smazatEnterAMezery() {
+    if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.replace(/\n/g, " ").replace(/ {2,}/g, " ").trim()
 }
@@ -124,7 +127,7 @@ function resetSmazanych() {
                     <div class="kontejner">
                         <button @click="smazatVelkaPismena" class="tlacitko">Smazat velká písmena</button>
                         <button @click="smazatDiakritiku" class="tlacitko">Smazat diakritiku</button>
-                        <button @click="smazatEnterAMezery" class="tlacitko">Smazat mezery</button>
+                        <button @click="smazatEnterAMezery" class="tlacitko">Smazat mezery navíc</button>
                     </div>
 
                     <div class="kontejner">
@@ -177,6 +180,7 @@ select {
     background-color: var(--tmave-fialova);
     cursor: pointer;
     transition: 0.2s;
+    min-width: 202px;
 }
 
 select:hover {
@@ -274,12 +278,29 @@ select option:disabled {
     gap: 10px;
     flex-direction: column;
     justify-content: center;
-    flex-wrap: wrap;
-    margin-right: 14px;
+    align-items: center;
+    width: 100px !important;
 }
 
 #delka>button {
-    width: 90px;
+    background-color: transparent;
+    border: none;
+    color: rgba(240, 240, 240, 0.7);
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 400;
+    transition: 0.1s;
+}
+
+#delka button:hover {
+    font-weight: 600;
+    color: var(--bila);
+    cursor: pointer;
+}
+
+.aktivni {
+    color: var(--svetle-fialova) !important;
+    font-weight: 600 !important;
 }
 
 #delka h3 {
@@ -288,7 +309,7 @@ select option:disabled {
 }
 
 #predel {
-    margin: 12px 20px 12px 0;
+    margin: 12px 20px 12px 15px;
     border: 1px solid var(--fialova);
 }
 

@@ -16,7 +16,7 @@ const textovePole = ref<InstanceType<typeof TextZadani> | null>(null)
 const delka = ref(5 * 60)
 const typTextu = ref("")
 
-const texty = ref(["Věty z pohádek"] as string[])
+const texty = ref([] as string[])
 
 onMounted(() => {
     axios.get("/procvic").then(response => {
@@ -39,7 +39,6 @@ function getText() {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(response => {
-        puvodniText.value = textovePole.value!.text
         textovePole.value!.text = response.data.text
     }).catch(e => {
         if (checkTeapot(e)) return
@@ -95,8 +94,9 @@ function smazatEnterAMezery() {
     textovePole.value!.text = textovePole.value!.text.replace(/\n/g, " ").replace(/ {2,}/g, " ").trim()
 }
 
-function resetSmazanych() {
+function zrusitPosledniUpravu() {
     textovePole.value!.text = puvodniText.value
+    puvodniText.value = ""
 }
 
 </script>
@@ -131,7 +131,7 @@ function resetSmazanych() {
                     </div>
 
                     <div class="kontejner">
-                        <button @click="resetSmazanych" class="cerveneTlacitko">Zrušit poslední úpravu</button>
+                        <button @click="zrusitPosledniUpravu" class="cerveneTlacitko" :disabled="puvodniText.length == 0">Zrušit poslední úpravu</button>
                     </div>
 
                     <button @click="pridatPraci" class="tlacitko">Zadat práci</button>

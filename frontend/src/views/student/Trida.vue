@@ -32,7 +32,7 @@ function get() {
         response.data.prace.sort((a: any, b: any) => b.datum.localeCompare(a.datum))
         for (let i = 0; i < response.data.prace.length; i++) {
             const prace1 = response.data.prace[i]
-            let p = { id: prace1.id, cislo: response.data.prace.length - i, datum: new Date(prace1.datum).toLocaleDateString(), cpm: prace1.cpm, presnost: prace1.presnost }
+            let p = { id: prace1.id, cislo: response.data.prace.length - i, datum: new Date(prace1.datum).toLocaleDateString('cs-CZ'), cpm: prace1.cpm, presnost: prace1.presnost }
 
             if (prace1.cpm != -1) praceDoko.value.push(p)
             else praceNove.value.push(p)
@@ -55,9 +55,9 @@ function get() {
 <template>
     <h1>Třída {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}</h1>
 
-    <div v-if="!nacitam && praceNove.length != 0" id="kontejner">
+    <div v-if="!nacitam" id="kontejner">
         <h2>Čeká na dokončení</h2>
-        <div class="praceKontejner">
+        <div v-if="praceNove.length != 0" class="praceKontejner">
             <RouterLink :to="`/prace/${v.id}`" v-for="v in praceNove" class="prace">
                 <div class="nadpisPrace">
                     <h3>Práce {{ v.cislo }}</h3>
@@ -66,9 +66,10 @@ function get() {
                 <img class="play" src="../../assets/icony/start.svg" alt="Dokonceno!">
             </RouterLink>
         </div>
+        <span v-else>Žádné</span>
 
         <h2>Dokončené</h2>
-        <div class="praceKontejner">
+        <div v-if="praceDoko.length != 0" class="praceKontejner">
             <div v-for="v in praceDoko" class="prace hotova">
                 <div class="nadpisPrace">
                     <h3>Práce {{ v.cislo }}</h3>
@@ -80,9 +81,10 @@ function get() {
                 </div>
             </div>
         </div>
+        <span v-else>Žádné</span>
     </div>
 
-    <span v-if="praceNove.length == 0 && !nacitam" id="textZaci">Zatím tu nejsou žádné zadané práce.</span>
+    <span v-if="praceNove.length == 0 && praceDoko.length == 0 && !nacitam" id="textZaci">Zatím tu nejsou žádné zadané práce.</span>
 </template>
 <style scoped>
 .statistika span b {
@@ -131,6 +133,11 @@ h2 {
     flex-direction: column;
     gap: 20px;
     text-align: left;
+}
+
+#kontejner>span {
+    align-self: center;
+    margin-bottom: 20px;
 }
 
 .praceKontejner {

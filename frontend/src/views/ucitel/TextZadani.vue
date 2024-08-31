@@ -95,6 +95,7 @@ textarea::-webkit-scrollbar-thumb {
 /* Changes the thumb color on hover */
 textarea::-webkit-scrollbar-thumb:hover {
     background: var(--svetle-fialova);
+    cursor: ns-resize;
     /* Darker color on hover */
 }
 

@@ -20,7 +20,9 @@ const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: numb
 const tab = ref("zaci") // zaci, prace, zadani
 
 const selectnutej = ref(-1)
-const studentOznacenej = ref(ref({ jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, medianRychlosti: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map }))
+const studentOznacenej = ref({ jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, rychlost: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map })
+const cpmVPracich = ref(new Map<number, number>())
+const presnostVPracich = ref(new Map<number, number>())
 
 const upravaStudenta = ref(false)
 const jmenoUprava = ref()
@@ -90,12 +92,23 @@ function select(id: number) {
     }
     upravaStudenta.value = false
     selectnutej.value = id
+    studentOznacenej.value = { jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, rychlost: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map }
+    cpmVPracich.value = new Map<number, number>()
+    presnostVPracich.value = new Map<number, number>()
+
     axios.get("/skola/student/" + id, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(response => {
-        studentOznacenej.value = response.data
+        studentOznacenej.value = response.data.student
+
+        for (const key in response.data.cpmVPracich) {
+            cpmVPracich.value.set(+key, response.data.cpmVPracich[key])
+        }
+        for (const key in response.data.presnostVPracich) {
+            presnostVPracich.value.set(+key, response.data.presnostVPracich[key])
+        }
     }).catch(e => {
         if (!checkTeapot(e)) {
             console.log(e)
@@ -178,8 +191,7 @@ function zadano() {
         </div>
         <div id="kod">
             <div>
-                <span @click="copy" :class="{ zamknutyKod: trida.zamknuta }">{{ trida.kod == undefined ? "------" :
-                    trida.kod }}</span>
+                <span @click="copy" :class="{ zamknutyKod: trida.zamknuta }">{{ trida.kod == undefined ? "------" : trida.kod }}</span>
                 <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída" @click="zamek()">
                 <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
             </div>
@@ -207,7 +219,7 @@ function zadano() {
                 </div>
                 <span><b>{{ naJednoDesetiny(st.cpm) }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
-            <div v-if="studenti.length == 0" id="textZaci">Tady uvidíte všechny žáky... <br>Sdělte jim kód nahoře.</div>
+            <div v-if="studenti.length == 0" id="textZaci">Tady uvidíte všechny žáky... <br>Sdělte jim kód nahoře, aby se mohli připojit.</div>
         </div>
         <div v-if="selectnutej != -1" class="detail">
             <div id="vrsek">
@@ -221,12 +233,49 @@ function zadano() {
                     <h3>{{ studentOznacenej.email }}</h3>
                 </div>
                 <form v-else>
-                    <input v-model="jmenoUprava" type="text">
+                    <input v-model="jmenoUprava" type="text" placeholder="Doporučeno: Příjmení Jméno">
                     <button type="submit" @click="zmenaJmena" class="tlacitko" id="ulozit">Uložit</button>
                 </form>
             </div>
-            <div>
 
+            <hr>
+
+            <div class="udaj">
+                <h4>Průměrná rychlost:</h4>
+                <div>{{ naJednoDesetiny(studentOznacenej.rychlost) == -1 ? "-" : naJednoDesetiny(studentOznacenej.rychlost) }} <span>CPM</span></div>
+            </div>
+
+            <div class="udaj">
+                <h4>Průměrná přesnost:</h4>
+                <div>{{ naJednoDesetiny(studentOznacenej.uspesnost) == -1 ? "-" : naJednoDesetiny(studentOznacenej.uspesnost) }} <span>%</span></div>
+            </div>
+
+            <div class="udaj">
+                <h4>Dní v řadě procvičuje:</h4>
+                <div>{{ naJednoDesetiny(studentOznacenej.daystreak) }}</div>
+            </div>
+
+            <div class="udaj">
+                <h4>Postup v kurzu:</h4>
+                <div>{{ naJednoDesetiny(studentOznacenej.dokonceno) }} <span>%</span></div>
+            </div>
+
+            <hr>
+
+            <div id="posledni-prace">
+                <div v-if="prace.length == 0" style="margin-top: 40px; width: 100%;">
+                    <span>Zatím žádné práce nebyly zadány</span>
+                </div>
+                <div v-else v-for="p, i in prace.slice(0, 3)">
+                    <h4>Práce {{ prace.length - i }}</h4>
+                    <span>{{ p.datum.toLocaleDateString("cs-CZ") }}</span>
+
+                    <div v-if="cpmVPracich.get(p.id) != undefined" class="udaje">
+                        <div>{{ cpmVPracich.get(p.id) == undefined ? "-" : naJednoDesetiny(cpmVPracich.get(p.id)!) }} <span>CPM</span></div>
+                        <div>{{ presnostVPracich.get(p.id) == undefined ? "-" : naJednoDesetiny(presnostVPracich.get(p.id)!) }} <span>%</span></div>
+                    </div>
+                    <div v-else>Nedokončena</div>
+                </div>
             </div>
         </div>
         <div v-else class="detail" id="predKliknutim">
@@ -234,12 +283,11 @@ function zadano() {
             <h2 v-if="studenti.length != 0">Vyberte studenta!</h2>
         </div>
     </div>
-
     <div v-else-if="tab == 'prace'" id="praceKontejner">
         <div v-for="v, i in prace" class="prace">
             <div class="nadpisPrace">
                 <h2>Práce {{ prace.length - i }}</h2>
-                <h3>{{ v.datum.toLocaleDateString() }}</h3>
+                <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
             </div>
             <span>{{ v.prumer_cpm }} CPM</span>
         </div>
@@ -254,8 +302,85 @@ function zadano() {
     </div>
 </template>
 <style scoped>
+.udaje {
+    display: flex;
+    flex-direction: column;
+    margin-top: 12px;
+}
+
+.udaje>div {
+    font-weight: 500;
+    font-size: 1.2rem;
+}
+
+.udaje>div>span {
+    font-size: 0.8rem;
+}
+
+hr {
+    width: 90%;
+    align-self: center;
+    margin: 5px 0;
+}
+
+form input::placeholder {
+    color: rgba(255, 255, 255, 0.42);
+}
+
+#posledni-prace {
+    display: flex;
+    margin-top: 10px;
+}
+
+#posledni-prace>* {
+    width: 33%;
+}
+
+#posledni-prace>h3 {
+    font-size: 1.15rem;
+    font-weight: 500;
+    grid-area: nadpis;
+    align-self: center;
+    justify-self: center;
+    margin-bottom: 3px;
+}
+
+#posledni-prace>div>span {
+    font-size: 0.9rem;
+}
+
+#posledni-prace>div>div:not(.udaje) {
+    margin-top: 26px;
+}
+
+#posledni-prace>div>h4 {
+    font-weight: 500;
+    font-size: 1.2rem;
+}
+
+.udaj {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    align-self: center;
+}
+
+.udaj>h4 {
+    font-size: 1.1rem;
+}
+
+.udaj>div {
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.udaj>div>span {
+    font-size: 1.1rem;
+}
+
 #textZaci {
-    height: 400px;
+    height: 380px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -421,11 +546,15 @@ function zadano() {
     font-weight: 500;
     padding: 0 6px;
     transition: 0.2s;
+    border-radius: 8px;
+}
+
+#kod>span {
+    transition: 0.2s;
 }
 
 #kod div span:hover {
     background-color: var(--fialova);
-    border-radius: 8px;
     cursor: grab;
 }
 
@@ -463,8 +592,7 @@ function zadano() {
     width: 430px;
     display: flex;
     gap: 10px;
-    height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px);
-    /* celá obrazovka - všechno co je nad seznamem zaku */
+    max-height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px); /* celá obrazovka - všechno co je nad seznamem zaku */
     flex-direction: column;
     overflow-y: scroll;
     padding-right: 10px;
@@ -481,10 +609,11 @@ function zadano() {
     display: flex;
     flex-direction: column;
     padding: 10px 15px;
+    gap: 3px;
 }
 
 .detail h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
     text-align: start;
 }
 
@@ -608,7 +737,6 @@ function zadano() {
 /* Customizes the track of the scrollbar */
 ::-webkit-scrollbar-track {
     background: var(--tmave-fialova);
-    /* Color of the track */
     border-radius: 3px;
     padding: 1px;
 }
@@ -616,13 +744,12 @@ function zadano() {
 /* Customizes the thumb of the scrollbar */
 ::-webkit-scrollbar-thumb {
     background: var(--fialova);
-    /* Color of the thumb */
     border-radius: 3px;
 }
 
 /* Changes the thumb color on hover */
 ::-webkit-scrollbar-thumb:hover {
     background: var(--svetle-fialova);
-    /* Darker color on hover */
+    cursor: ns-resize;
 }
 </style>

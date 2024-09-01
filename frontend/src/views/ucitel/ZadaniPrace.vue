@@ -181,6 +181,7 @@ select {
     cursor: pointer;
     transition: 0.2s;
     min-width: 202px;
+    font-family: inherit;
 }
 
 select:hover {

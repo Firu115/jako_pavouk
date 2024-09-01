@@ -30,6 +30,8 @@ const jmenoUprava = ref()
 const tridaJmenoUprava = ref()
 const tridaRocnikUprava = ref()
 
+const nacitamStudenta = ref(false)
+
 onMounted(() => {
     get()
 })
@@ -97,6 +99,8 @@ function select(id: number) {
     cpmVPracich.value = new Map<number, number>()
     presnostVPracich.value = new Map<number, number>()
 
+    nacitamStudenta.value = true
+
     axios.get("/skola/student/" + id, {
         headers: {
             Authorization: `Bearer ${getToken()}`
@@ -116,6 +120,8 @@ function select(id: number) {
             pridatOznameni("Chyba serveru")
         }
         selectnutej.value = -1
+    }).finally(() => {
+        nacitamStudenta.value = false
     })
 }
 
@@ -271,11 +277,13 @@ function zadano() {
                     <h4>Práce {{ prace.length - i }}</h4>
                     <span>{{ p.datum.toLocaleDateString("cs-CZ") }}</span>
 
-                    <div v-if="cpmVPracich.get(p.id) != undefined" class="udaje">
-                        <div>{{ cpmVPracich.get(p.id) == undefined ? "-" : naJednoDesetiny(cpmVPracich.get(p.id)!) }} <span>CPM</span></div>
-                        <div>{{ presnostVPracich.get(p.id) == undefined ? "-" : naJednoDesetiny(presnostVPracich.get(p.id)!) }} <span>%</span></div>
+                    <div v-if="cpmVPracich.get(p.id) != undefined || nacitamStudenta" class="udaje">
+                        <div>{{ cpmVPracich.get(p.id) == undefined ? "..." : naJednoDesetiny(cpmVPracich.get(p.id)!) }} <span>CPM</span></div>
+                        <div>{{ presnostVPracich.get(p.id) == undefined ? "..." : naJednoDesetiny(presnostVPracich.get(p.id)!) }} <span>%</span></div>
                     </div>
-                    <div v-else>Nedokončena</div>
+                    <div v-else>
+                        <Tooltip zprava="Nedokončil/a" :sirka="120" :vzdalenost="-3"><span>---</span></Tooltip>
+                    </div>
                 </div>
             </div>
         </div>
@@ -400,7 +408,8 @@ form input::placeholder {
 }
 
 #posledni-prace>div>div:not(.udaje) {
-    margin-top: 26px;
+    margin-top: 20px;
+    font-size: 1.5rem;
 }
 
 #posledni-prace>div>h4 {
@@ -517,27 +526,6 @@ form input::placeholder {
     width: 100px;
     margin-top: 5px;
     align-self: center;
-}
-
-#upravaTridy select {
-    border: none;
-    border-radius: 5px;
-    padding: 3px;
-    font-size: 1.3rem;
-    color: white;
-    font-family: "Red Hat Mono";
-    background-color: var(--fialova);
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-#upravaTridy select:hover {
-    background-color: var(--svetle-fialova);
-}
-
-#upravaTridy select option {
-    font-family: "Red Hat Mono";
-    background-color: var(--fialova) !important;
 }
 
 #predKliknutim {

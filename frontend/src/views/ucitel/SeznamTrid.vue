@@ -142,27 +142,6 @@ function vytvorit(e: Event) {
     gap: 5px;
 }
 
-#pridatFormular select {
-    border: none;
-    border-radius: 5px;
-    padding: 3px;
-    font-size: 1.3rem;
-    color: white;
-    font-family: "Red Hat Mono";
-    background-color: var(--fialova);
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-#pridatFormular select:hover {
-    background-color: var(--svetle-fialova) !important;
-}
-
-#pridatFormular select option {
-    font-family: "Red Hat Mono";
-    background-color: var(--fialova) !important;
-}
-
 #pridat {
     background-color: var(--tmave-fialova);
     border-radius: 100%;

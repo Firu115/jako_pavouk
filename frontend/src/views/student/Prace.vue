@@ -77,7 +77,7 @@ function konecTextu(o: number, p: number, n: MojeMapa, d: number) {
     delkaNapsanehoTextu.value = d
 }
 
-async function prodlouzit() {
+function prodlouzit() {
     nacitamNovej.value = true
 
     let pocetSlov = text.value.length

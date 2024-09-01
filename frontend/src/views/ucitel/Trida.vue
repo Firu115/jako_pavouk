@@ -8,12 +8,13 @@ import { moznostiRocnik, moznostiTrida } from '../../stores';
 import ZadaniPrace from './ZadaniPrace.vue';
 import router from '../../router';
 import { useHead } from '@unhead/vue';
+import Tooltip from "../../components/Tooltip.vue";
 
 const id = useRoute().params.id
 
-type Prace = { id: number, text: string, cas: number, datum: Date, prumer_cpm: number }
+type Prace = { id: number, text: string, cas: number, datum: Date, prumerneCPM: number, prumernaPresnost: number, StudentuDokoncilo: number }
 
-const trida = ref({} as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number })
+const trida = ref({} as { id: number, jmeno: string, ucitelID: number, kod: string, zamknuta: boolean })
 const prace = ref([] as Prace[])
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
 
@@ -46,7 +47,7 @@ function get() {
         prace.value = []
         for (let i = 0; i < response.data.prace.length; i++) {
             const prace1 = response.data.prace[i]
-            let p: Prace = { id: prace1.id, text: prace1.text, cas: prace1.cas, datum: new Date(prace1.datum), prumer_cpm: 0 }
+            let p: Prace = { id: prace1.id, text: prace1.text, cas: prace1.cas, datum: new Date(prace1.datum), prumerneCPM: prace1.prumerne_cpm, prumernaPresnost: prace1.prumerna_presnost, StudentuDokoncilo: prace1.studentu_dokoncilo }
             prace.value.push(p)
         }
         prace.value.sort((a: any, b: any) => b.datum.getTime() - a.datum.getTime())
@@ -285,11 +286,25 @@ function zadano() {
     </div>
     <div v-else-if="tab == 'prace'" id="praceKontejner">
         <div v-for="v, i in prace" class="prace">
-            <div class="nadpisPrace">
-                <h2>Práce {{ prace.length - i }}</h2>
-                <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
+            <Tooltip :zprava="v.text.slice(0, 100) + '...'" :sirka="300" :vzdalenost="3">
+                <div class="nadpisPrace">
+                    <h2>Práce {{ prace.length - i }}</h2>
+                    <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
+                </div>
+            </Tooltip>
+
+
+            <div class="statistika">
+                <Tooltip v-if="v.prumerneCPM != -1" zprava="Průměrná rychlost studentů" :sirka="160" :vzdalenost="5">
+                    <span><b>{{ naJednoDesetiny(v.prumerneCPM) }}</b> CPM</span>
+                </Tooltip>
+                <Tooltip v-if="v.prumernaPresnost != -1" zprava="Průměrná přesnost studentů" :sirka="160" :vzdalenost="5">
+                    <span><b>{{ naJednoDesetiny(v.prumernaPresnost) }}</b> %</span>
+                </Tooltip>
+                <Tooltip zprava="Studentů kteří mají hotovo" :sirka="160" :vzdalenost="5">
+                    <span class="udaj2"><b>{{ v.StudentuDokoncilo }}</b>/<b>{{ studenti.length }}</b></span>
+                </Tooltip>
             </div>
-            <span>{{ v.prumer_cpm }} CPM</span>
         </div>
         <span v-if="prace.length == 0" id="textZaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
     </div>
@@ -302,6 +317,33 @@ function zadano() {
     </div>
 </template>
 <style scoped>
+.udaj2 {
+    font-size: 1.6rem !important;
+    min-width: 95px !important;
+}
+
+.statistika span b {
+    font-family: 'Red Hat Mono';
+    font-size: 1.8rem;
+}
+
+.statistika span {
+    font-size: 1.2rem;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    justify-content: end;
+    height: 34px;
+    position: relative;
+    top: -2px;
+
+    min-width: 115px;
+}
+
+.statistika {
+    display: flex;
+}
+
 .udaje {
     display: flex;
     flex-direction: column;
@@ -329,11 +371,19 @@ form input::placeholder {
 
 #posledni-prace {
     display: flex;
-    margin-top: 10px;
+    height: 100%;
+    margin-top: 5px;
+}
+
+#posledni-prace>div:nth-child(1),
+#posledni-prace>div:nth-child(2) {
+    border-right: 2px solid #afafaf;
 }
 
 #posledni-prace>* {
     width: 33%;
+    padding-top: 5px;
+    height: 100%;
 }
 
 #posledni-prace>h3 {
@@ -397,7 +447,6 @@ form input::placeholder {
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 6px 12px;
-    cursor: pointer;
     transition: 0.1s;
     display: flex;
     justify-content: space-between;
@@ -592,7 +641,8 @@ form input::placeholder {
     width: 430px;
     display: flex;
     gap: 10px;
-    max-height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px); /* celá obrazovka - všechno co je nad seznamem zaku */
+    max-height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px);
+    /* celá obrazovka - všechno co je nad seznamem zaku */
     flex-direction: column;
     overflow-y: scroll;
     padding-right: 10px;

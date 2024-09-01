@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch } from "vue";
 
 const text = ref("")
 
@@ -12,7 +12,7 @@ function scrollDiv() {
 
 watch(text, () => {
     let t = text.value
-        .replace(/\n$/g, '\n\n')
+        .replace(/\n$/g, "\n\n")
         .replace(/(\r\n|\r|\n)/g, "↵\n")
         .replace(/(^ )|( {2,})|(↵\n)|( $)|!(.(\r\n|\r|\n))|([^A-Za-z0-9ěščřžýáíéůúťďňóĚŠČŘŽÝÁÍÉŮÚŤĎŇÓ ,.!?;:_=+\-*/%()[\]{}<>])/g, `<m style='background-color: rgba(255, 0, 0, 0.4); font-family: "Red Hat Mono", monospace; border-radius: 3px'>$&</m>`)
     // krejzy https://codersblock.com/blog/highlight-text-inside-a-textarea/

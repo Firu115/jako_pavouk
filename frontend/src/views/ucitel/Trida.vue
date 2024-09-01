@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import axios from 'axios';
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from '../../utils';
-import SipkaZpet from '../../components/SipkaZpet.vue';
-import { moznostiRocnik, moznostiTrida } from '../../stores';
-import ZadaniPrace from './ZadaniPrace.vue';
-import router from '../../router';
-import { useHead } from '@unhead/vue';
+import axios from "axios";
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
+import SipkaZpet from "../../components/SipkaZpet.vue";
+import { moznostiRocnik, moznostiTrida } from "../../stores";
+import ZadaniPrace from "./ZadaniPrace.vue";
+import router from "../../router";
+import { useHead } from "@unhead/vue";
 import Tooltip from "../../components/Tooltip.vue";
 
 const id = useRoute().params.id
@@ -178,33 +178,33 @@ function copy() {
 }
 
 function zadano() {
-    tab.value = 'prace'
+    tab.value = "prace"
     get()
 }
 
 </script>
 <template>
-    <h1 class="nadpisSeSipkou" style="margin: 0; direction: ltr;">
+    <h1 class="nadpis-se-sipkou" style="margin: 0; direction: ltr;">
         <SipkaZpet />
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
 
     <div id="dashboard">
-        <div v-if="tab == 'zaci'" id="prepinacTabu">
+        <div v-if="tab == 'zaci'" id="prepinac-tabu">
             <button class="tlacitko" @click="tab = 'prace'">Práce</button>
         </div>
-        <div v-else id="prepinacTabu">
+        <div v-else id="prepinac-tabu">
             <button class="tlacitko" @click="tab = 'zaci'">Žáci</button>
         </div>
         <div id="kod">
             <div>
-                <span @click="copy" :class="{ zamknutyKod: trida.zamknuta }">{{ trida.kod == undefined ? "------" : trida.kod }}</span>
+                <span @click="copy" :class="{ 'zamknuty-kod': trida.zamknuta }">{{ trida.kod == undefined ? "------" : trida.kod }}</span>
                 <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída" @click="zamek()">
                 <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
             </div>
-            <span :class="{ zamknutyKod: trida.zamknuta }">jakopavouk.cz/zapis/{{ trida.kod }}</span>
+            <span :class="{ 'zamknuty-kod': trida.zamknuta }">jakopavouk.cz/zapis/{{ trida.kod }}</span>
         </div>
-        <form id="upravaTridy">
+        <form id="uprava-tridy">
             <div>
                 <select v-model="tridaRocnikUprava" style="margin-right: 10px;">
                     <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
@@ -226,7 +226,7 @@ function zadano() {
                 </div>
                 <span><b>{{ naJednoDesetiny(st.cpm) }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
-            <div v-if="studenti.length == 0" id="textZaci">Tady uvidíte všechny žáky... <br>Sdělte jim kód nahoře, aby se mohli připojit.</div>
+            <div v-if="studenti.length == 0" id="text-zaci">Tady uvidíte všechny žáky... <br>Sdělte jim kód nahoře, aby se mohli připojit.</div>
         </div>
         <div v-if="selectnutej != -1" class="detail">
             <div id="vrsek">
@@ -287,15 +287,15 @@ function zadano() {
                 </div>
             </div>
         </div>
-        <div v-else class="detail" id="predKliknutim">
+        <div v-else class="detail" id="pred-kliknutim">
             <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
             <h2 v-if="studenti.length != 0">Vyberte studenta!</h2>
         </div>
     </div>
-    <div v-else-if="tab == 'prace'" id="praceKontejner">
+    <div v-else-if="tab == 'prace'" id="prace-kontejner">
         <div v-for="v, i in prace" class="prace">
             <Tooltip :zprava="v.text.slice(0, 100) + '...'" :sirka="300" :vzdalenost="3">
-                <div class="nadpisPrace">
+                <div class="nadpis-prace">
                     <h2>Práce {{ prace.length - i }}</h2>
                     <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
                 </div>
@@ -314,7 +314,7 @@ function zadano() {
                 </Tooltip>
             </div>
         </div>
-        <span v-if="prace.length == 0" id="textZaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
+        <span v-if="prace.length == 0" id="text-zaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
     </div>
 
     <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" />
@@ -331,7 +331,7 @@ function zadano() {
 }
 
 .statistika span b {
-    font-family: 'Red Hat Mono';
+    font-family: "Red Hat Mono";
     font-size: 1.8rem;
 }
 
@@ -438,14 +438,14 @@ form input::placeholder {
     font-size: 1.1rem;
 }
 
-#textZaci {
+#text-zaci {
     height: 380px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-#praceKontejner {
+#prace-kontejner {
     width: 75%;
     display: flex;
     flex-direction: column;
@@ -463,18 +463,18 @@ form input::placeholder {
     max-width: 100%;
 }
 
-.nadpisPrace {
+.nadpis-prace {
     display: flex;
     flex-direction: column;
     align-items: start;
 }
 
-.nadpisPrace h2 {
+.nadpis-prace h2 {
     font-size: 1.4rem;
     font-weight: 500;
 }
 
-.nadpisPrace h3 {
+.nadpis-prace h3 {
     font-size: 1.1rem;
     font-weight: 200;
     margin: 0;
@@ -502,12 +502,12 @@ form input::placeholder {
     background-color: var(--fialova);
 }
 
-.zamknutyKod {
+.zamknuty-kod {
     color: rgba(255, 255, 255, 0.3);
     text-decoration: line-through;
 }
 
-#upravaTridy {
+#uprava-tridy {
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 10px 15px;
@@ -516,19 +516,19 @@ form input::placeholder {
     gap: 5px;
 }
 
-#upravaTridy div {
+#uprava-tridy div {
     display: flex;
     align-items: center;
 }
 
-#upravaTridy .tlacitko,
-#prepinacTabu .tlacitko {
+#uprava-tridy .tlacitko,
+#prepinac-tabu .tlacitko {
     width: 100px;
     margin-top: 5px;
     align-self: center;
 }
 
-#predKliknutim {
+#pred-kliknutim {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -536,7 +536,7 @@ form input::placeholder {
     gap: 10px;
 }
 
-#predKliknutim img {
+#pred-kliknutim img {
     width: 200px;
 }
 
@@ -552,7 +552,7 @@ form input::placeholder {
     padding: 0 15px;
 }
 
-#prepinacTabu {
+#prepinac-tabu {
     background-color: var(--tmave-fialova);
     padding: 10px 15px;
     border-radius: 10px;

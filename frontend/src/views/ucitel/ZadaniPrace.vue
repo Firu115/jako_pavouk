@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import TextZadani from './TextZadani.vue';
-import axios from 'axios';
-import { checkTeapot, getToken, pridatOznameni } from '../../utils';
+import { onMounted, ref } from "vue";
+import TextZadani from "./TextZadani.vue";
+import axios from "axios";
+import { checkTeapot, getToken, pridatOznameni } from "../../utils";
 import Tooltip from "../../components/Tooltip.vue";
 
 const props = defineProps({
@@ -123,7 +123,7 @@ function zrusitPosledniUpravu() {
 
                 <hr id="predel">
 
-                <div class="vertKontejner">
+                <div class="vert-kontejner">
                     <div class="kontejner">
                         <button @click="smazatVelkaPismena" class="tlacitko">Smazat velká písmena</button>
                         <button @click="smazatDiakritiku" class="tlacitko">Smazat diakritiku</button>
@@ -131,7 +131,7 @@ function zrusitPosledniUpravu() {
                     </div>
 
                     <div class="kontejner">
-                        <button @click="zrusitPosledniUpravu" class="cerveneTlacitko" :disabled="puvodniText.length == 0">Zrušit poslední úpravu</button>
+                        <button @click="zrusitPosledniUpravu" class="cervene-tlacitko" :disabled="puvodniText.length == 0">Zrušit poslední úpravu</button>
                     </div>
 
                     <button @click="pridatPraci" class="tlacitko">Zadat práci</button>
@@ -158,11 +158,11 @@ function zrusitPosledniUpravu() {
 </template>
 <style scoped>
 .kontejner .tlacitko,
-.cerveneTlacitko {
+.cervene-tlacitko {
     width: 225px;
 }
 
-.vertKontejner {
+.vert-kontejner {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -197,13 +197,13 @@ select option:disabled {
     opacity: 1;
 }
 
-#genBtn {
+#gen-btn {
     margin-top: 0;
     width: 105px;
     background-color: var(--tmave-fialova);
 }
 
-#genBtn:hover {
+#gen-btn:hover {
     background-color: var(--fialova);
 }
 

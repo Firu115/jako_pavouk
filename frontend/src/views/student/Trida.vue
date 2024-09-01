@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import axios from 'axios';
-import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from '../../utils';
-import { onMounted, ref } from 'vue';
+import axios from "axios";
+import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
+import { onMounted, ref } from "vue";
 import { useHead } from "unhead"
-import router from '../../router';
+import router from "../../router";
 
 useHead({
     title: "Třída"
@@ -32,7 +32,7 @@ function get() {
         response.data.prace.sort((a: any, b: any) => b.datum.localeCompare(a.datum))
         for (let i = 0; i < response.data.prace.length; i++) {
             const prace1 = response.data.prace[i]
-            let p = { id: prace1.id, cislo: response.data.prace.length - i, datum: new Date(prace1.datum).toLocaleDateString('cs-CZ'), cpm: prace1.cpm, presnost: prace1.presnost }
+            let p = { id: prace1.id, cislo: response.data.prace.length - i, datum: new Date(prace1.datum).toLocaleDateString("cs-CZ"), cpm: prace1.cpm, presnost: prace1.presnost }
 
             if (prace1.cpm != -1) praceDoko.value.push(p)
             else praceNove.value.push(p)
@@ -57,9 +57,9 @@ function get() {
 
     <div v-if="!nacitam" id="kontejner">
         <h2>Čeká na dokončení</h2>
-        <div v-if="praceNove.length != 0" class="praceKontejner">
+        <div v-if="praceNove.length != 0" class="prace-kontejner">
             <RouterLink :to="`/prace/${v.id}`" v-for="v in praceNove" class="prace">
-                <div class="nadpisPrace">
+                <div class="nadpis-prace">
                     <h3>Práce {{ v.cislo }}</h3>
                     <h4>{{ v.datum }}</h4>
                 </div>
@@ -69,9 +69,9 @@ function get() {
         <span v-else>Žádné</span>
 
         <h2>Dokončené</h2>
-        <div v-if="praceDoko.length != 0" class="praceKontejner">
+        <div v-if="praceDoko.length != 0" class="prace-kontejner">
             <div v-for="v in praceDoko" class="prace hotova">
-                <div class="nadpisPrace">
+                <div class="nadpis-prace">
                     <h3>Práce {{ v.cislo }}</h3>
                     <h4>{{ v.datum }}</h4>
                 </div>
@@ -88,7 +88,7 @@ function get() {
 </template>
 <style scoped>
 .statistika span b {
-    font-family: 'Red Hat Mono';
+    font-family: "Red Hat Mono";
     font-size: 1.8rem;
 }
 
@@ -140,7 +140,7 @@ h2 {
     margin-bottom: 20px;
 }
 
-.praceKontejner {
+.prace-kontejner {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -167,18 +167,18 @@ h2 {
     transition-duration: 0.2s;
 }
 
-.nadpisPrace {
+.nadpis-prace {
     display: flex;
     flex-direction: column;
     align-items: start;
 }
 
-.nadpisPrace h3 {
+.nadpis-prace h3 {
     font-size: 1.4rem;
     font-weight: 500;
 }
 
-.nadpisPrace h4 {
+.nadpis-prace h4 {
     font-size: 1.1rem;
     font-weight: 200;
     margin: 0;

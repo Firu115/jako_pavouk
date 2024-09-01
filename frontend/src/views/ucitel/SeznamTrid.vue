@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import axios from 'axios';
-import { onMounted, ref } from 'vue';
-import { checkTeapot, getToken, pridatOznameni } from '../../utils';
-import { moznostiRocnik, moznostiTrida, prihlasen } from '../../stores';
-import { useHead } from '@unhead/vue';
-import { useRouter } from 'vue-router';
+import axios from "axios";
+import { onMounted, ref } from "vue";
+import { checkTeapot, getToken, pridatOznameni } from "../../utils";
+import { moznostiRocnik, moznostiTrida, prihlasen } from "../../stores";
+import { useHead } from "@unhead/vue";
+import { useRouter } from "vue-router";
 
 const router = useRouter()
 
@@ -94,7 +94,7 @@ function vytvorit(e: Event) {
         </div>
     </div>
     <div v-else-if="pridavani">
-        <form id="pridatFormular">
+        <form id="pridat-formular">
             <h2 style="margin-bottom: 10px;">Vytvořit třídu</h2>
 
             <div>
@@ -127,7 +127,7 @@ function vytvorit(e: Event) {
     align-self: center;
 }
 
-#pridatFormular {
+#pridat-formular {
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 20px 30px;
@@ -136,7 +136,7 @@ function vytvorit(e: Event) {
     gap: 5px;
 }
 
-#pridatFormular div {
+#pridat-formular div {
     display: flex;
     align-items: center;
     gap: 5px;

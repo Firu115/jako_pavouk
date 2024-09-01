@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { checkTeapot, getToken, pridatOznameni } from '../../utils';
-import axios from 'axios';
-import { role } from '../../stores';
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { checkTeapot, getToken, pridatOznameni } from "../../utils";
+import axios from "axios";
+import { role } from "../../stores";
 
 const router = useRouter()
 
@@ -30,7 +30,7 @@ function potvrditKod(e: Event) {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(_ => {
-        state.value = 'jmeno'
+        state.value = "jmeno"
     }).catch(e => {
         if (e.response.data.error == "Takova trida neexistuje") {
             pridatOznameni("Taková třída neexistuje")

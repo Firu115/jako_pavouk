@@ -113,8 +113,12 @@ function vytvorit(e: Event) {
     <div v-else-if="rocniky.size === 0 && nacitam">
         Načítám...
     </div>
-    <div v-else>
-        Zatím tu žádné nejsou!
+    <div v-else style="background-color: var(--tmave-fialova); padding: 20px; border-radius: 10px; max-width: 450px;">
+        <b style="font-size: 1.3rem;">Vítejte v rozhraní pro učitele!</b>
+        <br><br>
+        Zatím tu nejsou žádné třídy, a tak svou první můžete vytvořit pomocí tlačítka dole.
+        <br>
+        Žáci se do ní mohou připojit pomocí 6ti-místného kódu, který bude automaticky vytvořen.
     </div>
 
     <div id="pridat" @click="pridavani = !pridavani" :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">

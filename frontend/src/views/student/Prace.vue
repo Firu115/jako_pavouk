@@ -82,18 +82,18 @@ function prodlouzit() {
 
     let pocetSlov = text.value.length
     let lastSlovo = text.value[pocetSlov - 1]
-        let lastPismeno = lastSlovo[lastSlovo.length - 1]
-        if (lastPismeno.znak != " ") {
-            delkaTextu.value++
-            text.value[pocetSlov - 1].push({ id: delkaTextu.value, znak: " ", spatne: 0, psat: true })
-        }
+    let lastPismeno = lastSlovo[lastSlovo.length - 1]
+    if (lastPismeno.znak != " ") {
+        delkaTextu.value++
+        text.value[pocetSlov - 1].push({ id: delkaTextu.value, znak: " ", spatne: 0, psat: true })
+    }
 
     rawText.value.forEach((slovo: string, i: number) => {
         text.value.push([])
         const slovoArr = [...slovo]
         slovoArr.forEach(pismeno => {
-            text.value[pocetSlov + i].push({ id: delkaTextu.value, znak: pismeno, spatne: 0, psat: true })
             delkaTextu.value++
+            text.value[pocetSlov + i].push({ id: delkaTextu.value, znak: pismeno, spatne: 0, psat: true })
         })
     })
 
@@ -114,5 +114,4 @@ function prodlouzit() {
         :pismena="'pracepraceprace'" />
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

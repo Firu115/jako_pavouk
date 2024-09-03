@@ -44,6 +44,10 @@ function potvrditKod(e: Event) {
             pridatOznameni("Tato třída je zamčená")
             return
         }
+        if (e.response.data.error == "Jako ucitel nemuzete byt ve tride") {
+            pridatOznameni("Jako učitel/ka se nemůžete připojit do žádné třídy.")
+            return
+        }
         if (!checkTeapot(e)) {
             console.log(e)
             pridatOznameni("Chyba serveru")

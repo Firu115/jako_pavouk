@@ -36,16 +36,13 @@ function potvrditKod(e: Event) {
     }).then(_ => {
         state.value = "jmeno"
     }).catch(e => {
+        console.log(e.response.data.error)
         if (e.response.data.error == "Takova trida neexistuje") {
             pridatOznameni("Taková třída neexistuje")
             return
         }
         if (e.response.data.error == "Trida je zamcena") {
             pridatOznameni("Tato třída je zamčená")
-            return
-        }
-        if (e.response.data.error == "Jako ucitel nemuzete byt ve tride") {
-            pridatOznameni("Jako učitel/ka se nemůžete připojit do žádné třídy.")
             return
         }
         if (!checkTeapot(e)) {
@@ -57,6 +54,10 @@ function potvrditKod(e: Event) {
 
 function zapsatSe(e: Event) {
     e.preventDefault()
+    if (jmeno.value == "") {
+        pridatOznameni("Zadej prosím jméno")
+        return
+    }
     axios.post("/skola/zapis", { kod: kod.value, jmeno: jmeno.value }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
@@ -70,8 +71,14 @@ function zapsatSe(e: Event) {
                 pridatOznameni("Už jsi ve třídě")
                 return
             }
-            console.log(e)
-            pridatOznameni("Chyba serveru")
+            if (e.response.data.error == "jako ucitel nemuzete byt ve tride") {
+                pridatOznameni("Jako učitel/ka se nemůžete připojit do žádné třídy")
+                return
+            }
+            if (!checkTeapot(e)) {
+                console.log(e)
+                pridatOznameni("Chyba serveru")
+            }
         }
     })
 }

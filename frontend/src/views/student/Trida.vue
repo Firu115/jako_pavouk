@@ -55,7 +55,7 @@ function get() {
 <template>
     <h1>Třída {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}</h1>
 
-    <div v-if="!nacitam" id="kontejner">
+    <div v-if="!nacitam && (praceNove.length != 0 || praceDoko.length != 0)" id="kontejner">
         <h2>Čeká na dokončení</h2>
         <div v-if="praceNove.length != 0" class="prace-kontejner">
             <RouterLink :to="`/prace/${v.id}`" v-for="v in praceNove" class="prace">
@@ -137,7 +137,7 @@ h2 {
 
 #kontejner>span {
     align-self: center;
-    margin-bottom: 20px;
+    margin: 10px 0 10px 0;
 }
 
 .prace-kontejner {

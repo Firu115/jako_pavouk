@@ -21,6 +21,10 @@ onMounted(() => {
 
 function potvrditKod(e: Event) {
     e.preventDefault()
+    if (getToken() == null) {
+        pridatOznameni("Nejsi přihlášen/a!")
+        return
+    }
     if (!/^[a-zA-Z0-9]{6}$/.test(kod.value)) {
         pridatOznameni("Kód je neplatný")
         return

@@ -26,6 +26,7 @@ const cpmVPracich = ref(new Map<number, number>())
 const presnostVPracich = ref(new Map<number, number>())
 
 const upravaStudenta = ref(false)
+const upravaTridy = ref("nic")
 const jmenoUprava = ref()
 const tridaJmenoUprava = ref()
 const tridaRocnikUprava = ref()
@@ -172,6 +173,24 @@ function prejmenovatTridu(e: Event) {
     })
 }
 
+function smazatTridu(e: Event) {
+    e.preventDefault()
+
+    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "smazat" }, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).then(() => {
+        router.push("/skola")
+        pridatOznameni(`Třída "${trida.value.jmeno}", byla smazána.`)
+    }).catch(e => {
+        if (!checkTeapot(e)) {
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        }
+    })
+}
+
 function copy() {
     navigator.clipboard.writeText(trida.value.kod)
     pridatOznameni("Zkopírováno!", undefined, "copy")
@@ -190,11 +209,10 @@ function zadano() {
     </h1>
 
     <div id="dashboard">
-        <div v-if="tab == 'zaci'" id="prepinac-tabu">
-            <button class="tlacitko" @click="tab = 'prace'">Práce</button>
-        </div>
-        <div v-else id="prepinac-tabu">
-            <button class="tlacitko" @click="tab = 'zaci'">Žáci</button>
+        <div id="prepinac-tabu">
+            <h3>Přepnout pohled:</h3>
+            <button v-if="tab == 'zaci'" class="tlacitko" @click="tab = 'prace'">Práce</button>
+            <button v-else class="tlacitko" @click="tab = 'zaci'">Žáci</button>
         </div>
         <div id="kod">
             <div>
@@ -204,17 +222,36 @@ function zadano() {
             </div>
             <span :class="{ 'zamknuty-kod': trida.zamknuta }">jakopavouk.cz/zapis/{{ trida.kod }}</span>
         </div>
-        <form id="uprava-tridy">
-            <div>
-                <select v-model="tridaRocnikUprava" style="margin-right: 10px;">
-                    <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
-                </select>
-                <select v-model="tridaJmenoUprava">
-                    <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
-                </select>
-            </div>
-            <button class="tlacitko" @click="prejmenovatTridu" :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}` == trida.jmeno">Potvrdit</button>
-        </form>
+        <div id="uprava-tridy">
+            <form v-if="upravaTridy == 'nic'">
+                <button class="tlacitko" @click="upravaTridy = 'jmeno'">Přejmenovat</button>
+                <button class="tlacitko" @click="upravaTridy = 'smazat'">
+                    <img src="../../assets/icony/trash.svg" alt="Smazat" width="25" height="25" style="filter: brightness(0.9);">
+                </button>
+            </form>
+            <form v-else-if="upravaTridy == 'jmeno'" id="prejmenovani-tridy">
+                <div>
+                    <select v-model="tridaRocnikUprava">
+                        <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
+                    </select>
+                    <select v-model="tridaJmenoUprava">
+                        <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="tlacitko" @click="prejmenovatTridu"
+                        :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}` == trida.jmeno">Potvrdit</button>
+                    <button class="tlacitko" @click="upravaTridy = 'nic'">Zpět</button>
+                </div>
+            </form>
+            <form v-else-if="upravaTridy == 'smazat'">
+                <button class="cervene-tlacitko" @click="smazatTridu">Opravdu smazat?</button>
+                <button class="tlacitko" @click="upravaTridy = 'nic'">
+                    <img src="../../assets/icony/plus.svg" alt="Smazat" width="28" height="28"
+                        style="filter: brightness(0.9); transform: rotate(45deg);">
+                </button>
+            </form>
+        </div>
     </div>
 
     <div v-if="tab == 'zaci'" id="pulic">
@@ -300,7 +337,6 @@ function zadano() {
                     <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
                 </div>
             </Tooltip>
-
 
             <div class="statistika">
                 <Tooltip v-if="v.prumerneCPM != -1" zprava="Průměrná rychlost studentů" :sirka="160" :vzdalenost="5">
@@ -508,24 +544,55 @@ form input::placeholder {
 }
 
 #uprava-tridy {
+    width: 200px;
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 10px 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
 }
 
-#uprava-tridy div {
+#uprava-tridy form {
     display: flex;
     align-items: center;
+    gap: 10px;
+    height: 100%;
 }
 
-#uprava-tridy .tlacitko,
+#uprava-tridy form .tlacitko,
+#uprava-tridy form .cervene-tlacitko {
+    margin: 0;
+    padding: 0 9px;
+}
+
+#uprava-tridy form .tlacitko:has(img) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#uprava-tridy form .tlacitko:nth-child(2) {
+    padding: 1px;
+    aspect-ratio: 1/1;
+}
+
 #prepinac-tabu .tlacitko {
     width: 100px;
-    margin-top: 5px;
     align-self: center;
+}
+
+#prejmenovani-tridy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#prejmenovani-tridy div {
+    display: flex;
+    gap: 10px;
+}
+
+#prejmenovani-tridy div .tlacitko {
+    height: 28px;
+    min-width: 50px;
 }
 
 #pred-kliknutim {
@@ -556,7 +623,7 @@ form input::placeholder {
     background-color: var(--tmave-fialova);
     padding: 10px 15px;
     border-radius: 10px;
-    width: 196px;
+    width: 200px;
     display: flex;
     flex-direction: column;
 }

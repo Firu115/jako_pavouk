@@ -4,6 +4,7 @@ import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../ut
 import { onMounted, ref } from "vue";
 import { useHead } from "unhead"
 import router from "../../router";
+import { mobil } from "../../stores";
 
 useHead({
     title: "Třída"
@@ -16,6 +17,10 @@ const praceDoko = ref([] as { id: number, cislo: number, datum: string, cpm: num
 const nacitam = ref(false)
 
 onMounted(() => {
+    if (mobil) {
+        history.back()
+        pridatOznameni("Psaní na telefonech zatím neučíme...")
+    }
     get()
 })
 

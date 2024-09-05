@@ -17,7 +17,7 @@ const praceDoko = ref([] as { id: number, cislo: number, datum: string, cpm: num
 const nacitam = ref(false)
 
 onMounted(() => {
-    if (mobil) {
+    if (mobil.value) {
         history.back()
         pridatOznameni("Psaní na telefonech zatím neučíme...")
     }

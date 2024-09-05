@@ -112,9 +112,8 @@ function get() {
 
 .play {
     height: 32px;
-    margin-right: 12px;
+    margin-right: 8px;
     margin-bottom: 1px;
-
 }
 
 h2 {

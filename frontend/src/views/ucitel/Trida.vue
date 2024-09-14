@@ -217,8 +217,10 @@ function zadano() {
         <div id="kod">
             <div>
                 <span @click="copy" :class="{ 'zamknuty-kod': trida.zamknuta }">{{ trida.kod == undefined ? "------" : trida.kod }}</span>
-                <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída" @click="zamek()">
-                <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
+                <Tooltip zprava="Uzamknout/Odemknout přístup novým žákům do této třídy" :sirka="192" :vzdalenost="12">
+                    <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída" @click="zamek()">
+                    <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
+                </Tooltip>
             </div>
             <span :class="{ 'zamknuty-kod': trida.zamknuta }">jakopavouk.cz/zapis/{{ trida.kod }}</span>
         </div>

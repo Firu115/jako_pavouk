@@ -20,7 +20,7 @@ const texty = ref([] as string[])
 
 onMounted(() => {
     axios.get("/procvic").then(response => {
-        response.data.texty.forEach((el: {"jmeno": string}) => {
+        response.data.texty.forEach((el: { "jmeno": string }) => {
             texty.value.push(el.jmeno)
         })
         texty.value.sort()
@@ -31,7 +31,7 @@ onMounted(() => {
     })
 })
 
-function getText() {
+function getText(nenahraditAleProdlouzit?: boolean) {
     if (typTextu.value == "") return
 
     axios.post("/skola/text", { "typ": typTextu.value }, {
@@ -39,7 +39,10 @@ function getText() {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(response => {
-        textovePole.value!.text = response.data.text
+        if (typeof nenahraditAleProdlouzit !== "undefined" || nenahraditAleProdlouzit) {
+            textovePole.value!.text += " "
+            textovePole.value!.text += response.data.text
+        } else textovePole.value!.text = response.data.text
     }).catch(e => {
         if (checkTeapot(e)) return
         console.log(e)
@@ -131,7 +134,8 @@ function zrusitPosledniUpravu() {
                     </div>
 
                     <div class="kontejner">
-                        <button @click="zrusitPosledniUpravu" class="cervene-tlacitko" :disabled="puvodniText.length == 0">Zrušit poslední úpravu</button>
+                        <button @click="zrusitPosledniUpravu" class="cervene-tlacitko" :disabled="puvodniText.length == 0">Zrušit poslední
+                            úpravu</button>
                     </div>
 
                     <button @click="pridatPraci" class="tlacitko">Zadat práci</button>
@@ -143,13 +147,16 @@ function zrusitPosledniUpravu() {
             <div>
                 <span>
                     <Tooltip :sirka="1000" zprava="Znaky / Slova">
-                        {{ textovePole?.text.length }} / {{ textovePole?.text == "" ? 0 : textovePole?.text.trim().split(' ').length }}
+                        {{ textovePole?.text.length }} / {{ textovePole?.text == "" ? 0 : textovePole?.text.trim().split(" ").length }}
                     </Tooltip>
                 </span>
-                <select v-model="typTextu" @change="getText">
-                    <option value="" selected>Vlastní text</option>
-                    <option v-for="t in texty" :value="t">{{ t }}</option>
-                </select>
+                <div style="display: flex; gap: 5px;">
+                    <select v-model="typTextu" @change="getText()">
+                        <option value="" selected>Vlastní text</option>
+                        <option v-for="t in texty" :value="t">{{ t }}</option>
+                    </select>
+                    <button class="tlacitko" @click="getText(true)" :disabled="typTextu == ''"><img src="../../assets/icony/plus.svg" alt="Prodloužit"></button>
+                </div>
             </div>
 
             <TextZadani ref="textovePole" />
@@ -190,6 +197,7 @@ select:hover {
 
 select option {
     background-color: var(--tmave-fialova) !important;
+    font-family: 'Montserrat';
 }
 
 select option:disabled {
@@ -238,6 +246,23 @@ select option:disabled {
     padding: 10px;
     background-color: var(--tmave-fialova);
     border-radius: 5px;
+}
+
+#text .tlacitko {
+    width: 40px;
+    margin: 0;
+    background-color: var(--tmave-fialova);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#text .tlacitko:hover {
+    background-color: var(--fialova);
+}
+
+#text .tlacitko img {
+    width: 25px;
 }
 
 #nastaveni {

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import axios from "axios";
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
-import { moznostiRocnik, moznostiTrida } from "../../stores";
+import { moznostiRocnik, moznostiTrida, moznostiSkupina } from "../../stores";
 import ZadaniPrace from "./ZadaniPrace.vue";
-import router from "../../router";
 import { useHead } from "@unhead/vue";
 import Tooltip from "../../components/Tooltip.vue";
 
@@ -30,8 +29,11 @@ const upravaTridy = ref("nic")
 const jmenoUprava = ref()
 const tridaJmenoUprava = ref()
 const tridaRocnikUprava = ref()
+const tridaSkupinaUprava = ref()
 
 const nacitamStudenta = ref(false)
+
+const router = useRouter()
 
 onMounted(() => {
     get()
@@ -58,6 +60,7 @@ function get() {
         let a = trida.value.jmeno.split(/[\. ]/)
         tridaJmenoUprava.value = a[1]
         tridaRocnikUprava.value = a[0] + (isNaN(+a[0]) ? " " : ".")
+        tridaSkupinaUprava.value = a[2] == undefined ? "-" : a[2].slice(1)
 
         useHead({
             title: trida.value.jmeno
@@ -159,8 +162,8 @@ function prejmenovatTridu(e: Event) {
     e.preventDefault()
 
     let staryJmeno = trida.value.jmeno
-    trida.value.jmeno = `${tridaRocnikUprava.value}${tridaJmenoUprava.value}`
-    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: `${tridaRocnikUprava.value}${tridaJmenoUprava.value}` }, {
+    trida.value.jmeno = `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' S' + tridaSkupinaUprava.value : ''}`
+    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' S' + tridaSkupinaUprava.value : ''}` }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
@@ -239,10 +242,13 @@ function zadano() {
                     <select v-model="tridaJmenoUprava">
                         <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
                     </select>
+                    <select v-model="tridaSkupinaUprava">
+                        <option v-for="v in moznostiSkupina" :value="v">{{ v }}</option>
+                    </select>
                 </div>
                 <div>
                     <button class="tlacitko" @click="prejmenovatTridu"
-                        :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}` == trida.jmeno">Potvrdit</button>
+                        :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}${tridaSkupinaUprava != '-' ? ' S' + tridaSkupinaUprava : ''}` == trida.jmeno">Potvrdit</button>
                     <button class="tlacitko" @click="upravaTridy = 'nic'">Zpět</button>
                 </div>
             </form>
@@ -546,7 +552,7 @@ form input::placeholder {
 }
 
 #uprava-tridy {
-    width: 200px;
+    width: 250px;
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 10px 15px;
@@ -555,6 +561,7 @@ form input::placeholder {
 #uprava-tridy form {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     height: 100%;
 }
@@ -625,7 +632,7 @@ form input::placeholder {
     background-color: var(--tmave-fialova);
     padding: 10px 15px;
     border-radius: 10px;
-    width: 200px;
+    width: 250px;
     display: flex;
     flex-direction: column;
 }
@@ -678,7 +685,7 @@ form input::placeholder {
 }
 
 #dashboard {
-    width: 100%;
+    width: 115%;
     height: 90px;
     margin: 20px 0 40px 0;
     display: flex;

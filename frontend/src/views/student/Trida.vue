@@ -58,7 +58,7 @@ function get() {
 
 </script>
 <template>
-    <h1>Třída {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}</h1>
+    <h1>Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}</h1>
 
     <div v-if="!nacitam && (praceNove.length != 0 || praceDoko.length != 0)" id="kontejner">
         <h2>Čeká na dokončení</h2>

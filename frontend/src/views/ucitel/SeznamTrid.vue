@@ -2,7 +2,7 @@
 import axios from "axios";
 import { onMounted, ref } from "vue";
 import { checkTeapot, getToken, pridatOznameni } from "../../utils";
-import { moznostiRocnik, moznostiTrida, prihlasen } from "../../stores";
+import { moznostiRocnik, moznostiTrida, moznostiSkupina, prihlasen } from "../../stores";
 import { useHead } from "@unhead/vue";
 import { useRouter } from "vue-router";
 
@@ -14,6 +14,7 @@ const pridavani = ref(false)
 
 const rocnik = ref("1.")
 const trida = ref("A")
+const skupina = ref("-")
 
 const nacitam = ref(true)
 
@@ -53,7 +54,7 @@ function get() {
 function vytvorit(e: Event) {
     e.preventDefault()
 
-    axios.post("/skola/create-trida", { jmeno: `${rocnik.value}${trida.value}` }, {
+    axios.post("/skola/create-trida", { jmeno: `${rocnik.value}${trida.value}${skupina.value != '-' ? ' S' + skupina.value : ''}` }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
@@ -95,7 +96,7 @@ function vytvorit(e: Event) {
     </div>
     <div v-else-if="pridavani">
         <form id="pridat-formular">
-            <h2 style="margin-bottom: 10px;">Vytvořit třídu</h2>
+            <h2 style="margin-bottom: 15px;">Vytvořit třídu</h2>
 
             <div>
                 <h3>Ročník:</h3>
@@ -103,8 +104,12 @@ function vytvorit(e: Event) {
                     <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
                 </select>
                 <h3>Třída:</h3>
-                <select v-model="trida">
+                <select v-model="trida" style="margin-right: 10px;">
                     <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
+                </select>
+                <h3>Skupina:</h3>
+                <select v-model="skupina">
+                    <option v-for="v in moznostiSkupina" :value="v">{{ v }}</option>
                 </select>
             </div>
             <button class="tlacitko" @click="vytvorit">Vytvořit</button>
@@ -144,6 +149,18 @@ function vytvorit(e: Event) {
     display: flex;
     align-items: center;
     gap: 5px;
+}
+
+#pridat-formular input {
+    width: 180px;
+    height: 40px;
+    font-size: 1.2rem;
+    background-color: var(--fialova);
+    border: 0;
+    border-radius: 5px;
+    color: var(--bila);
+    padding: 10px;
+    font-weight: normal;
 }
 
 #pridat {

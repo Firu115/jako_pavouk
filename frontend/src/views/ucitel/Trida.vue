@@ -16,6 +16,7 @@ type Prace = { id: number, text: string, cas: number, datum: Date, prumerneCPM: 
 const trida = ref({} as { id: number, jmeno: string, ucitelID: number, kod: string, zamknuta: boolean })
 const prace = ref([] as Prace[])
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
+const vsechnyTridy = ref([] as { id: string, jmeno: string, kod: string, zamknuta: boolean, pocet_studentu: number, pocet_praci: number }[])
 
 const tab = ref("zaci") // zaci, prace, zadani
 
@@ -30,6 +31,8 @@ const jmenoUprava = ref()
 const tridaJmenoUprava = ref()
 const tridaRocnikUprava = ref()
 const tridaSkupinaUprava = ref()
+
+const studentTridaZmena = ref()
 
 const nacitamStudenta = ref(false)
 
@@ -61,6 +64,9 @@ function get() {
         tridaJmenoUprava.value = a[1]
         tridaRocnikUprava.value = a[0] + (isNaN(+a[0]) ? " " : ".")
         tridaSkupinaUprava.value = a[2] == undefined ? "-" : a[2].slice(1)
+
+        vsechnyTridy.value = response.data.ostatniTridy.sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno))
+        studentTridaZmena.value = trida.value.id
 
         useHead({
             title: trida.value.jmeno
@@ -138,7 +144,6 @@ function zmenaJmena(e: Event) {
 
     if (jmenoUprava.value == "" || jmenoUprava.value.length > 30) {
         pridatOznameni("Jméno musí být 1-30 znaků dlouhé")
-        upravaStudenta.value = false
         return
     }
     axios.post("/skola/student/", { jmeno: jmenoUprava.value, id: selectnutej.value }, {
@@ -149,6 +154,31 @@ function zmenaJmena(e: Event) {
         upravaStudenta.value = false
         studentOznacenej.value.jmeno = jmenoUprava.value
         get()
+    }).catch(e => {
+        if (!checkTeapot(e)) {
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        }
+        selectnutej.value = -1
+    })
+}
+
+function zmenaStudentTridy(e: Event) {
+    e.preventDefault()
+
+    if (studentTridaZmena.value == trida.value.id) {
+        upravaStudenta.value = false
+        return
+    }
+
+    axios.post("/skola/student/", { trida_id: parseInt(studentTridaZmena.value), id: selectnutej.value }, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).then(_ => {
+        upravaStudenta.value = false
+        get()
+        selectnutej.value = -1
     }).catch(e => {
         if (!checkTeapot(e)) {
             console.log(e)
@@ -286,7 +316,13 @@ function zadano() {
                 </div>
                 <form v-else>
                     <input v-model="jmenoUprava" type="text" placeholder="Doporučeno: Příjmení Jméno">
-                    <button type="submit" @click="zmenaJmena" class="tlacitko" id="ulozit">Uložit</button>
+                    <div>
+                        <select v-model="studentTridaZmena">
+                            <option :value="-1">Odebrat</option>
+                            <option v-for="v in vsechnyTridy" :value="v.id">{{ v.jmeno }}</option>
+                        </select>
+                        <button type="submit" @click="zmenaJmena($event); zmenaStudentTridy($event)" class="tlacitko" id="ulozit">Potvrdit</button>
+                    </div>
                 </form>
             </div>
 
@@ -760,6 +796,20 @@ form input::placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 5px;
+    width: 100%;
+}
+
+#vrsek form>div {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+}
+
+#vrsek select {
+    height: 30px;
+    font-size: 1rem;
 }
 
 #vrsek div {
@@ -776,14 +826,15 @@ form input::placeholder {
 }
 
 #ulozit {
-    transform: scale(0.8);
-    margin-top: 5px;
-    width: 100px;
-    height: 35px;
+    font-size: 0.9rem;
+    margin-top: 0;
+    width: 80px;
+    height: 30px;
+    padding: 0;
 }
 
 #vrsek input {
-    width: 280px;
+    width: 100%;
     height: 30px;
     background-color: var(--fialova);
     border: 0;

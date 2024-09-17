@@ -42,6 +42,7 @@ function get() {
         if (checkTeapot(e)) return
         if (e.response.status == 401) {
             pridatOznameni("Sem nemáš přístup")
+            router.push("/")
             return
         }
         console.log(e)

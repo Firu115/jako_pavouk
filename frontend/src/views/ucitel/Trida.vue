@@ -63,7 +63,7 @@ function get() {
         let a = trida.value.jmeno.split(/[\. ]/)
         tridaJmenoUprava.value = a[1]
         tridaRocnikUprava.value = a[0] + (isNaN(+a[0]) ? " " : ".")
-        tridaSkupinaUprava.value = a[2] == undefined ? "-" : a[2].slice(1)
+        tridaSkupinaUprava.value = a[3] == undefined ? "-" : a[3]
 
         vsechnyTridy.value = response.data.ostatniTridy.sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno))
         studentTridaZmena.value = trida.value.id
@@ -192,8 +192,8 @@ function prejmenovatTridu(e: Event) {
     e.preventDefault()
 
     let staryJmeno = trida.value.jmeno
-    trida.value.jmeno = `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' S' + tridaSkupinaUprava.value : ''}`
-    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' S' + tridaSkupinaUprava.value : ''}` }, {
+    trida.value.jmeno = `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ '    + tridaSkupinaUprava.value : ''}`
+    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ '    + tridaSkupinaUprava.value : ''}` }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
@@ -278,7 +278,7 @@ function zadano() {
                 </div>
                 <div>
                     <button class="tlacitko" @click="prejmenovatTridu"
-                        :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}${tridaSkupinaUprava != '-' ? ' S' + tridaSkupinaUprava : ''}` == trida.jmeno">Potvrdit</button>
+                        :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}${tridaSkupinaUprava != '-' ? ' ￨ '    + tridaSkupinaUprava : ''}` == trida.jmeno">Potvrdit</button>
                     <button class="tlacitko" @click="upravaTridy = 'nic'">Zpět</button>
                 </div>
             </form>

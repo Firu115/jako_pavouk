@@ -78,18 +78,22 @@ function vytvorit(e: Event) {
             <h2>{{ rocnik }}{{ isNaN(+rocnik) ? "" : ". ročník" }}</h2>
             <div id="kontejner">
                 <div class="blok" v-for="t in tridy" @click="$router.push('/skola/' + t.id)">
-                    <h3>{{ t.jmeno }}
+                    <h3>{{ t.jmeno }}</h3>
+
+                    <hr style="margin: 0 8px 8px 8px; border: #c0c0c0 1px solid;">
+
+                    <div style="display: flex; justify-content: space-around;">
+                        <div class="statistiky">
+                            <span v-if="t.pocet_studentu == 1"><b>{{ t.pocet_studentu }}</b> student</span>
+                            <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b> studenti</span>
+                            <span v-else><b>{{ t.pocet_studentu }}</b> studentů</span>
+
+                            <span v-if="t.pocet_praci == 0 || t.pocet_praci > 4"><b>{{ t.pocet_praci }}</b> prací</span>
+                            <span v-else><b>{{ t.pocet_praci }}</b> práce</span>
+                        </div>
+
                         <img v-if="!t.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída">
                         <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída">
-                    </h3>
-
-                    <div class="statistiky">
-                        <span v-if="t.pocet_studentu == 1"><b>{{ t.pocet_studentu }}</b> student</span>
-                        <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b> studenti</span>
-                        <span v-else><b>{{ t.pocet_studentu }}</b> studentů</span>
-
-                        <span v-if="t.pocet_praci == 0 || t.pocet_praci > 4"><b>{{ t.pocet_praci }}</b> prací</span>
-                        <span v-else><b>{{ t.pocet_praci }}</b> práce</span>
                     </div>
                 </div>
             </div>
@@ -215,10 +219,11 @@ function vytvorit(e: Event) {
 }
 
 .blok img {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     position: relative;
-    top: 3px;
+    top: 5px;
+    right: 3px;
 }
 
 .blok h3 {

@@ -192,8 +192,8 @@ function prejmenovatTridu(e: Event) {
     e.preventDefault()
 
     let staryJmeno = trida.value.jmeno
-    trida.value.jmeno = `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ '    + tridaSkupinaUprava.value : ''}`
-    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ '    + tridaSkupinaUprava.value : ''}` }, {
+    trida.value.jmeno = `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ ' + tridaSkupinaUprava.value : ''}`
+    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ ' + tridaSkupinaUprava.value : ''}` }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
@@ -278,7 +278,7 @@ function zadano() {
                 </div>
                 <div>
                     <button class="tlacitko" @click="prejmenovatTridu"
-                        :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}${tridaSkupinaUprava != '-' ? ' ￨ '    + tridaSkupinaUprava : ''}` == trida.jmeno">Potvrdit</button>
+                        :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}${tridaSkupinaUprava != '-' ? ' ￨ ' + tridaSkupinaUprava : ''}` == trida.jmeno">Potvrdit</button>
                     <button class="tlacitko" @click="upravaTridy = 'nic'">Zpět</button>
                 </div>
             </form>
@@ -351,7 +351,7 @@ function zadano() {
             <hr>
 
             <div id="posledni-prace">
-                <div v-if="prace.length == 0" style="margin-top: 40px; width: 100%;">
+                <div v-if="prace.length == 0" style="margin-top: 40px; width: 100%; border: none;">
                     <span>Zatím žádné práce nebyly zadány</span>
                 </div>
                 <div v-else v-for="p, i in prace.slice(0, 3)">
@@ -375,7 +375,7 @@ function zadano() {
     </div>
     <div v-else-if="tab == 'prace'" id="prace-kontejner">
         <div v-for="v, i in prace" class="prace">
-            <Tooltip :zprava="`<b>${v.cas/60} min</b> | ${v.text.slice(0, 100)}...`" :sirka="300" :vzdalenost="3">
+            <Tooltip :zprava="`<b>${v.cas / 60} min</b> | ${v.text.slice(0, 100)}...`" :sirka="300" :vzdalenost="3">
                 <div class="nadpis-prace">
                     <h2>Práce {{ prace.length - i }}</h2>
                     <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
@@ -605,7 +605,8 @@ form input::placeholder {
 #uprava-tridy form .tlacitko,
 #uprava-tridy form .cervene-tlacitko {
     margin: 0;
-    padding: 0 9px;
+    padding: 0 15px;
+    width: 130px;
 }
 
 #uprava-tridy form .tlacitko:has(img) {
@@ -617,6 +618,7 @@ form input::placeholder {
 #uprava-tridy form .tlacitko:nth-child(2) {
     padding: 1px;
     aspect-ratio: 1/1;
+    width: 40px;
 }
 
 #prepinac-tabu .tlacitko {

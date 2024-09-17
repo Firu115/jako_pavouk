@@ -375,7 +375,7 @@ function zadano() {
     </div>
     <div v-else-if="tab == 'prace'" id="prace-kontejner">
         <div v-for="v, i in prace" class="prace">
-            <Tooltip :zprava="v.text.slice(0, 100) + '...'" :sirka="300" :vzdalenost="3">
+            <Tooltip :zprava="`<b>${v.cas/60} min</b> | ${v.text.slice(0, 100)}...`" :sirka="300" :vzdalenost="3">
                 <div class="nadpis-prace">
                     <h2>Práce {{ prace.length - i }}</h2>
                     <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>

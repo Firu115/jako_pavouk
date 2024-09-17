@@ -87,8 +87,8 @@ function vytvorit(e: Event) {
                         <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b> studenti</span>
                         <span v-else><b>{{ t.pocet_studentu }}</b> studentů</span>
 
-                        <span v-if="t.pocet_praci <= 4"><b>{{ t.pocet_praci }}</b> práce</span>
-                        <span v-else><b>{{ t.pocet_praci }}</b> prací</span>
+                        <span v-if="t.pocet_praci == 0 || t.pocet_praci > 4"><b>{{ t.pocet_praci }}</b> prací</span>
+                        <span v-else><b>{{ t.pocet_praci }}</b> práce</span>
                     </div>
                 </div>
             </div>

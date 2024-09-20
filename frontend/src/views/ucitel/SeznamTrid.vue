@@ -55,7 +55,7 @@ function get() {
 function vytvorit(e: Event) {
     e.preventDefault()
 
-    axios.post("/skola/create-trida", { jmeno: `${rocnik.value}${trida.value}${skupina.value != '-' ? ' S' + skupina.value : ''}` }, {
+    axios.post("/skola/create-trida", { jmeno: `${rocnik.value}${trida.value}${skupina.value != '-' ? ' ￨ ' + skupina.value : ''}` }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }

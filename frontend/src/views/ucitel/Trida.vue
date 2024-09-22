@@ -204,6 +204,7 @@ function smazatPraci(prace: Prace) {
     }).then(() => {
         get()
         pridatOznameni("Práce byla smazána.")
+        smazatPraciID.value = 0
     }).catch(e => {
         if (!checkTeapot(e)) {
             console.log(e)

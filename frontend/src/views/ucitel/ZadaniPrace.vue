@@ -29,7 +29,6 @@ onMounted(() => {
         texty.value.sort((a: { obtiznost: number }, b: { obtiznost: number }) => { return a.obtiznost - b.obtiznost })
     }).catch(e => {
         if (checkTeapot(e)) return
-        console.log(e)
         pridatOznameni("Chyba serveru")
     })
 
@@ -39,7 +38,7 @@ onMounted(() => {
         }
     }).catch(e => {
         if (checkTeapot(e)) return
-        console.log(e)
+        console.log(typeof e)
         pridatOznameni("Chyba serveru")
     })
 })

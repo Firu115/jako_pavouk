@@ -34,7 +34,7 @@ function get() {
         trida.value = response.data.trida
 
         praceNove.value = []
-        response.data.prace.sort((a: any, b: any) => b.datum.localeCompare(a.datum))
+        response.data.prace.sort((a: { datum: string }, b: { datum: string }) => b.datum.localeCompare(a.datum))
         for (let i = 0; i < response.data.prace.length; i++) {
             const prace1 = response.data.prace[i]
             let p = { id: prace1.id, cislo: response.data.prace.length - i, datum: new Date(prace1.datum).toLocaleDateString("cs-CZ"), cpm: prace1.cpm, presnost: prace1.presnost }
@@ -63,7 +63,7 @@ function get() {
     <div v-if="!nacitam && (praceNove.length != 0 || praceDoko.length != 0)" id="kontejner">
         <h2>Čeká na dokončení</h2>
         <div v-if="praceNove.length != 0" class="prace-kontejner">
-            <RouterLink :to="`/prace/${v.id}`" v-for="v in praceNove" class="prace">
+            <RouterLink :to="`/prace/${v.id}`" v-for="v in praceNove" :key="v.id" class="prace">
                 <div class="nadpis-prace">
                     <h3>Práce {{ v.cislo }}</h3>
                     <h4>{{ v.datum }}</h4>
@@ -75,7 +75,7 @@ function get() {
 
         <h2>Dokončené</h2>
         <div v-if="praceDoko.length != 0" class="prace-kontejner">
-            <div v-for="v in praceDoko" class="prace hotova">
+            <div v-for="v in praceDoko" :key="v.id" class="prace hotova">
                 <div class="nadpis-prace">
                     <h3>Práce {{ v.cislo }}</h3>
                     <h4>{{ v.datum }}</h4>

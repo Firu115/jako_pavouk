@@ -33,7 +33,7 @@ function potvrditKod(e: Event) {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
-    }).then(_ => {
+    }).then(() => {
         state.value = "jmeno"
     }).catch(e => {
         console.log(e.response.data.error)
@@ -62,7 +62,7 @@ function zapsatSe(e: Event) {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
-    }).then(_ => {
+    }).then(() => {
         router.push("/trida")
         role.value = "student"
     }).catch(e => {

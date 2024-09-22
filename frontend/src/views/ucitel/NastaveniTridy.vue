@@ -6,14 +6,15 @@ import axios from "axios";
 import { useRouter } from "vue-router";
 import KodTridy from "../../components/KodTridy.vue";
 
-const emit = defineEmits(["prejmenovatTridu"])
+const emit = defineEmits(["prejmenovatTridu", "refresh"])
 
 type Trida = {
     id: number,
     jmeno: string,
     ucitelID: number,
     kod: string,
-    zamknuta: boolean
+    zamknuta: boolean,
+    klavesnice: string
 }
 
 const props = defineProps({
@@ -21,7 +22,10 @@ const props = defineProps({
         type: Object as PropType<Trida>,
         required: true
     },
-    pocetStudentu: Number
+    pocetStudentu: {
+        type: Number,
+        required: true
+    }
 })
 
 const router = useRouter()
@@ -29,12 +33,17 @@ const router = useRouter()
 const tridaRocnikUprava = ref()
 const tridaJmenoUprava = ref()
 const tridaSkupinaUprava = ref()
+const klavesniceUprava = ref()
 
 function smazatTridu(e: Event) {
     e.preventDefault()
 
     if (props.pocetStudentu != 0) {
-        if (!confirm(`${props.pocetStudentu} studentů se už připojilo do této třídy. Opravdu ji chcete smazat?`)) return
+        let zprava: string = ""
+        if (props.pocetStudentu == 1) zprava = "1 student se už připojil do této třídy."
+        else if (props.pocetStudentu <= 4) zprava = `${props.pocetStudentu} studenti se už připojili do této třídy.`
+        else zprava = `${props.pocetStudentu} studentů se už připojilo do této třídy.`
+        if (!confirm(zprava + " Opravdu ji chcete smazat?")) return
     }
 
     axios.post("/skola/zmena-tridy", { trida_id: props.trida.id, zmena: "smazat" }, {
@@ -52,11 +61,30 @@ function smazatTridu(e: Event) {
     })
 }
 
+function postKlavesnice(e: Event) {
+    e.preventDefault()
+
+    axios.post("/skola/zmena-tridy", { trida_id: props.trida.id, zmena: "klavesnice", hodnota: klavesniceUprava.value ? "qwerty" : "qwertz" }, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).then(() => {
+        emit("refresh")
+    }).catch(e => {
+        if (!checkTeapot(e)) {
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        }
+    })
+}
+
 onMounted(() => {
     let a = props.trida.jmeno.split(/[. ]/)
     tridaJmenoUprava.value = a[1]
     tridaRocnikUprava.value = a[0] + (isNaN(+a[0]) ? " " : ".")
     tridaSkupinaUprava.value = a[3] == undefined ? "-" : a[3]
+
+    klavesniceUprava.value = props.trida.klavesnice == "qwerty"
 })
 
 const tridaJmeno = computed(() => {
@@ -65,42 +93,62 @@ const tridaJmeno = computed(() => {
 
 </script>
 <template>
-    <div id="nastaveni">
-        <KodTridy :kod="trida.kod" :id="trida.id" :zamknuta="trida.zamknuta" />
-        <div id="uprava-tridy">
-            <h3>Přejmenovat třídu:</h3>
-            <form id="prejmenovani-tridy">
-                <div>
-                    <select v-model="tridaRocnikUprava">
-                        <option v-for="v in moznostiRocnik" :value="v" :key="v">{{ v }}</option>
-                    </select>
-                    <select v-model="tridaJmenoUprava">
-                        <option v-for="v in moznostiTrida" :value="v" :key="v">{{ v }}</option>
-                    </select>
-                    <select v-model="tridaSkupinaUprava">
-                        <option v-for="v in moznostiSkupina" :value="v" :key="v">{{ v }}</option>
-                    </select>
-                </div>
-                <div>
-                    <button class="tlacitko" @click="emit('prejmenovatTridu', $event, tridaJmeno)"
-                        :disabled="tridaJmeno == trida.jmeno">Potvrdit</button>
-                </div>
-            </form>
+    <KodTridy :kod="trida.kod" :id="trida.id" :zamknuta="trida.zamknuta" />
+    <div id="uprava-tridy">
+        <h3>Přejmenovat třídu:</h3>
+        <form id="prejmenovani-tridy">
+            <div>
+                <select v-model="tridaRocnikUprava">
+                    <option v-for="v in moznostiRocnik" :value="v" :key="v">{{ v }}</option>
+                </select>
+                <select v-model="tridaJmenoUprava">
+                    <option v-for="v in moznostiTrida" :value="v" :key="v">{{ v }}</option>
+                </select>
+                <select v-model="tridaSkupinaUprava">
+                    <option v-for="v in moznostiSkupina" :value="v" :key="v">{{ v }}</option>
+                </select>
+            </div>
+            <div>
+                <button class="tlacitko" @click="emit('prejmenovatTridu', $event, tridaJmeno)" :disabled="tridaJmeno == trida.jmeno">Potvrdit</button>
+            </div>
+        </form>
 
-            <h3>Smazat třídu:</h3>
-            <form>
-                <button type="button" class="cervene-tlacitko" @click="smazatTridu">Smazat třídu</button>
-            </form>
-        </div>
+        <hr>
+
+        <h3>Preference klávesnice:</h3>
+        <form>
+            <input type="checkbox" id="toggle1" class="toggle-checkbox" v-model="klavesniceUprava" />
+            <label for="toggle1" class="toggle-contejner">
+                <div>Qwertz</div>
+                <div>Qwerty</div>
+            </label>
+
+            <button class="tlacitko" @click="postKlavesnice" :disabled="klavesniceUprava == props.trida.klavesnice">Potvrdit</button>
+        </form>
+
+        <hr>
+
+        <h3>Smazat třídu:</h3>
+        <form>
+            <button type="button" class="cervene-tlacitko" @click="smazatTridu">Smazat třídu</button>
+        </form>
     </div>
 </template>
 <style scoped>
-#nastaveni {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
+hr {
+    width: 80%;
+    margin: 10px;
+    align-self: center;
+}
+
+.toggle-contejner div {
+    padding: 7px;
+}
+
+.toggle-contejner {
+    font-size: 16px;
+    width: 190px;
+    height: 34px;
 }
 
 #uprava-tridy {
@@ -111,6 +159,7 @@ const tridaJmeno = computed(() => {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: 15px;
 }
 
 #uprava-tridy form {
@@ -124,7 +173,9 @@ const tridaJmeno = computed(() => {
 #uprava-tridy form .tlacitko,
 #uprava-tridy form .cervene-tlacitko {
     margin: 0;
+    height: 34px;
     padding: 0 15px;
+    width: auto;
 }
 
 #uprava-tridy form .tlacitko:has(img) {
@@ -150,4 +201,23 @@ const tridaJmeno = computed(() => {
     gap: 10px;
 }
 
+/* firefox nenenene */
+@supports(-webkit-tap-highlight-color: black) {
+    select:hover {
+        background-color: var(--svetle-fialova) !important;
+    }
+
+    select {
+        padding-left: 5px;
+    }
+}
+
+select:hover {
+    background-color: var(--fialova);
+}
+
+select option {
+    background-color: var(--fialova) !important;
+    font-weight: 400;
+}
 </style>

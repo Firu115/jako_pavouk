@@ -14,7 +14,7 @@ const id = useRoute().params.id
 
 type Prace = { id: number, text: string, cas: number, datum: Date, prumerneCPM: number, prumernaPresnost: number, StudentuDokoncilo: number }
 
-const trida = ref({} as { id: number, jmeno: string, ucitelID: number, kod: string, zamknuta: boolean })
+const trida = ref({} as { id: number, jmeno: string, ucitelID: number, kod: string, zamknuta: boolean, klavesnice: string })
 const prace = ref([] as Prace[])
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
 const vsechnyTridy = ref([] as { id: string, jmeno: string, kod: string, zamknuta: boolean, pocet_studentu: number, pocet_praci: number }[])
@@ -315,7 +315,8 @@ function smazatPraci(prace: Prace) {
         </div>
         <div v-else class="detail" id="pred-kliknutim">
             <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
-            <h2 v-if="studenti.length != 0">Vyberte studenta!</h2>
+            <h2 v-if="studenti.length == 0" style="font-size: 1.1rem;">Tady budou statistiky studentů!</h2>
+            <h2 v-else>Vyberte studenta!</h2>
         </div>
     </div>
     <div v-else-if="tab == 'prace'" id="pulic-praci">
@@ -353,7 +354,7 @@ function smazatPraci(prace: Prace) {
 
     <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" />
     <NastaveniTridy v-else-if="tab == 'nastaveni'" ref="nastaveni" :trida="trida"
-        :pocetStudentu="vsechnyTridy.find(t => t.id === String(trida.id))!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" />
+        :pocetStudentu="vsechnyTridy.find(t => t.id === String(trida.id))!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" @refresh="get" />
 
     <div v-if="tab == 'prace' || tab == 'zadani'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')"
         :style="{ transform: tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">

@@ -36,7 +36,7 @@ function get() {
         }
     }).then(response => {
         Object.keys(response.data.tridy).forEach(key => {
-            rocniky.value.set(key, response.data.tridy[key].sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno)))
+            rocniky.value.set(key, response.data.tridy[key].sort((a: { jmeno: string }, b: { jmeno: string }) => a.jmeno.localeCompare(b.jmeno)))
         })
     }).catch(e => {
         if (checkTeapot(e)) return
@@ -59,7 +59,7 @@ function vytvorit(e: Event) {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
-    }).then(_ => {
+    }).then(() => {
         pridavani.value = false
         get()
     }).catch(e => {
@@ -74,10 +74,10 @@ function vytvorit(e: Event) {
 <template>
     <h1>Třídy</h1>
     <div id="rocniky" v-if="!pridavani && rocniky.size !== 0">
-        <div v-for="[rocnik, tridy] in rocniky" class="rocnik">
+        <div v-for="[rocnik, tridy] in rocniky" :key="rocnik" class="rocnik">
             <h2>{{ rocnik }}{{ isNaN(+rocnik) ? "" : ". ročník" }}</h2>
             <div id="kontejner">
-                <div class="blok" v-for="t in tridy" @click="$router.push('/skola/' + t.id)">
+                <div class="blok" v-for="t in tridy" :key="t.id" @click="$router.push('/skola/' + t.id)">
                     <h3>{{ t.jmeno }}</h3>
 
                     <hr style="margin: 0 8px 8px 8px; border: #c0c0c0 1px solid;">
@@ -106,15 +106,15 @@ function vytvorit(e: Event) {
             <div>
                 <h3>Ročník:</h3>
                 <select v-model="rocnik" style="margin-right: 10px;">
-                    <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
+                    <option v-for="v in moznostiRocnik" :key="v" :value="v">{{ v }}</option>
                 </select>
                 <h3>Třída:</h3>
                 <select v-model="trida" style="margin-right: 10px;">
-                    <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
+                    <option v-for="v in moznostiTrida" :key="v" :value="v">{{ v }}</option>
                 </select>
                 <h3>Skupina:</h3>
                 <select v-model="skupina">
-                    <option v-for="v in moznostiSkupina" :value="v">{{ v }}</option>
+                    <option v-for="v in moznostiSkupina" :key="v" :value="v">{{ v }}</option>
                 </select>
             </div>
             <button class="tlacitko" @click="vytvorit">Vytvořit</button>
@@ -154,18 +154,6 @@ function vytvorit(e: Event) {
     display: flex;
     align-items: center;
     gap: 5px;
-}
-
-#pridat-formular input {
-    width: 180px;
-    height: 40px;
-    font-size: 1.2rem;
-    background-color: var(--fialova);
-    border: 0;
-    border-radius: 5px;
-    color: var(--bila);
-    padding: 10px;
-    font-weight: normal;
 }
 
 #pridat {

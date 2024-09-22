@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, useTemplateRef } from "vue";
 import TextZadani from "./TextZadani.vue";
 import axios from "axios";
-import { checkTeapot, getToken, pridatOznameni } from "../../utils";
+import { checkTeapot, getToken, pridatOznameni, format } from "../../utils";
 import Tooltip from "../../components/Tooltip.vue";
 
 const props = defineProps({
@@ -11,19 +11,32 @@ const props = defineProps({
 
 const emit = defineEmits(["zadano"])
 
-const textovePole = ref<InstanceType<typeof TextZadani> | null>(null)
+const textovePole = useTemplateRef("textove-pole")
 
 const delka = ref(5 * 60)
 const typTextu = ref("")
+const lekceTextu = ref()
 
-const texty = ref([] as string[])
+const texty = ref([] as { jmeno: string, obtiznost: number }[])
+const lekce = ref([] as { id: number, lekce_id: number, pismena: string }[])
+let mapa: Map<string, { id: number, lekce_id: number, pismena: string }[]> = new Map<string, { id: number, lekce_id: number, pismena: string }[]>();
 
 onMounted(() => {
     axios.get("/procvic").then(response => {
-        response.data.texty.forEach((el: { "jmeno": string }) => {
-            texty.value.push(el.jmeno)
+        response.data.texty.forEach((el: { jmeno: string, obtiznost: number }) => {
+            texty.value.push({ jmeno: el.jmeno, obtiznost: el.obtiznost })
         })
-        texty.value.sort()
+        texty.value.sort((a: { obtiznost: number }, b: { obtiznost: number }) => { return a.obtiznost - b.obtiznost })
+    }).catch(e => {
+        if (checkTeapot(e)) return
+        console.log(e)
+        pridatOznameni("Chyba serveru")
+    })
+
+    axios.get("/skola/typy-cviceni").then(response => {
+        for (const k in response.data) {
+            mapa.set(k, response.data[k].sort((a: { id: number, lekce_id: number, pismena: string }, b: { id: number, lekce_id: number, pismena: string }) => a.lekce_id - b.lekce_id))
+        }
     }).catch(e => {
         if (checkTeapot(e)) return
         console.log(e)
@@ -31,18 +44,32 @@ onMounted(() => {
     })
 })
 
-function getText(nenahraditAleProdlouzit?: boolean) {
+function getText() {
     if (typTextu.value == "") return
+
+    if (typTextu.value == "1" || typTextu.value == "2" || typTextu.value == "3" || typTextu.value == "4") {
+        axios.get("/cvic/" + lekceTextu.value.pismena + "/" + lekceTextu.value.id, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        }).then(response => {
+            if (textovePole.value?.text.length != 0 && textovePole.value?.text[textovePole.value?.text.length - 1] != " ") textovePole.value!.text += " "
+            textovePole.value!.text += response.data.text.join("").slice(0, -1)
+        }).catch(e => {
+            if (checkTeapot(e)) return
+            console.log(e)
+            pridatOznameni("Chyba serveru")
+        })
+        return
+    }
 
     axios.post("/skola/text", { "typ": typTextu.value }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(response => {
-        if (typeof nenahraditAleProdlouzit !== "undefined" || nenahraditAleProdlouzit) {
-            textovePole.value!.text += " "
-            textovePole.value!.text += response.data.text
-        } else textovePole.value!.text = response.data.text
+        if (textovePole.value?.text.length != 0 && textovePole.value?.text[textovePole.value?.text.length - 1] != " ") textovePole.value!.text += " "
+        textovePole.value!.text += response.data.text
     }).catch(e => {
         if (checkTeapot(e)) return
         console.log(e)
@@ -64,7 +91,7 @@ function pridatPraci() {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
-    }).then(_ => {
+    }).then(() => {
         emit("zadano")
     }).catch(e => {
         if (checkTeapot(e)) return
@@ -100,6 +127,47 @@ function smazatEnterAMezery() {
 function zrusitPosledniUpravu() {
     textovePole.value!.text = puvodniText.value
     puvodniText.value = ""
+}
+
+function getZnakyASlova() {
+    if (textovePole.value == null) return "0 / 0"
+    let vys = ""
+
+    vys += textovePole.value.text.length
+    if (textovePole.value.text.length == 0 || textovePole.value.text.length >= 5) vys += " znaků"
+    else if (textovePole.value.text.length == 1) vys += " znak"
+    else vys += " znaky"
+
+    vys += " / "
+    let slova = 0
+    if (textovePole.value.text.length != 0) slova = textovePole.value.text.trim().split(/[ \n]+/).length
+    vys += slova
+    if (slova == 0 || slova >= 5) vys += " slov"
+    else if (slova == 1) vys += " slovo"
+    else vys += " slova"
+
+    return vys
+}
+
+function upravaSelectuLekci() {
+    switch (typTextu.value) {
+        case "1":
+            lekce.value = mapa.get("nova")!
+            break
+        case "2":
+            lekce.value = mapa.get("naucena")!
+            break
+        case "3":
+            lekce.value = mapa.get("slova")!
+            break
+        case "4":
+            lekce.value = mapa.get("programator")!
+            break
+        default:
+            lekce.value = []
+    }
+
+    lekceTextu.value = ""
 }
 
 </script>
@@ -144,26 +212,48 @@ function zrusitPosledniUpravu() {
         </div>
 
         <div id="text">
-            <div>
-                <span>
-                    <Tooltip :sirka="1000" zprava="Znaky / Slova">
-                        {{ textovePole?.text.length }} / {{ textovePole?.text == "" ? 0 : textovePole?.text.trim().split(" ").length }}
-                    </Tooltip>
-                </span>
-                <div style="display: flex; gap: 5px;">
-                    <select v-model="typTextu" @change="getText()">
-                        <option value="" selected>Vlastní text</option>
-                        <option v-for="t in texty" :value="t">{{ t }}</option>
-                    </select>
-                    <button class="tlacitko" @click="getText(true)" :disabled="typTextu == ''"><img src="../../assets/icony/plus.svg" alt="Prodloužit"></button>
-                </div>
+            <div style="display: flex; gap: 5px; width: 100%;">
+                <select v-model="typTextu" @change="upravaSelectuLekci">
+                    <option value="" style="color: #a1a1a1;">Generovat text</option>
+                    <option value="1">Nová písmena z lekce</option>
+                    <option value="2">Naučená písmena z lekce</option>
+                    <option value="3">Slova z lekce</option>
+                    <option value="4">Programátorské</option>
+                    <option v-for="t, i in texty" :value="t.jmeno"
+                        :class="{ lehkaObtiznost: t.obtiznost == 1, stredniObtiznost: t.obtiznost == 2, tezkaObtiznost: t.obtiznost == 3 }" :key="i">
+                        {{ t.jmeno }}
+                    </option>
+                </select>
+                <select v-model="lekceTextu" :disabled="typTextu != '1' && typTextu != '2' && typTextu != '3' && typTextu != '4'"
+                    style="width: 121px;">
+                    <option value="" style="color: #a1a1a1;">Vybrat lekci</option>
+                    <option v-for="l in lekce" :value="l" :key="l.id">{{ format(l.pismena) }}</option>
+                </select>
+                <button class="tlacitko" @click="getText"
+                    :disabled="typTextu == '' || ((typTextu == '1' || typTextu == '2' || typTextu == '3' || typTextu == '4') && lekceTextu == '')">
+                    <img src="../../assets/icony/plus.svg" alt="Prodloužit">
+                </button>
             </div>
 
-            <TextZadani ref="textovePole" />
+            <TextZadani ref="textove-pole" />
+
+            <span>{{ getZnakyASlova() }}</span>
         </div>
     </div>
 </template>
 <style scoped>
+.lehkaObtiznost {
+    color: rgb(0, 185, 0);
+}
+
+.stredniObtiznost {
+    color: rgb(255, 184, 52);
+}
+
+.tezkaObtiznost {
+    color: rgb(255, 51, 51);
+}
+
 .kontejner .tlacitko,
 .cervene-tlacitko {
     width: 225px;
@@ -181,23 +271,33 @@ select {
     height: 40px;
     border: none;
     border-radius: 5px;
-    padding: 5px;
     font-size: 1rem;
     color: white;
     background-color: var(--tmave-fialova);
     cursor: pointer;
     transition: 0.2s;
-    min-width: 202px;
     font-family: inherit;
 }
 
+/* firefox nenenene */
+@supports(-webkit-tap-highlight-color: black) {
+    select:hover {
+        background-color: var(--fialova) !important;
+    }
+
+    select {
+        padding-left: 5px;
+    }
+}
+
 select:hover {
-    background-color: var(--fialova) !important;
+    background-color: var(--tmave-fialova);
 }
 
 select option {
     background-color: var(--tmave-fialova) !important;
-    font-family: 'Montserrat';
+    font-family: "Montserrat", Candara !important;
+    font-weight: 400;
 }
 
 select option:disabled {
@@ -205,28 +305,19 @@ select option:disabled {
     opacity: 1;
 }
 
-#gen-btn {
-    margin-top: 0;
-    width: 105px;
-    background-color: var(--tmave-fialova);
-}
-
-#gen-btn:hover {
-    background-color: var(--fialova);
-}
-
 #pulic {
     display: flex;
     justify-content: space-between;
     gap: 40px;
     width: 860px;
+    margin-top: 20px;
 }
 
 #text {
     width: 410px;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px);
+    height: calc(100vh - 60px - 25px - 30px - 5px);
     /* celá obrazovka - všechno co je nad tím */
     border-radius: 10px;
     gap: 15px;
@@ -238,14 +329,15 @@ select option:disabled {
     align-items: center;
 }
 
-#text>div span {
+#text span {
     display: block;
-    justify-self: start;
-    width: 120px;
-    height: 40px;
-    padding: 10px;
-    background-color: var(--tmave-fialova);
+    align-self: flex-start;
+    padding: 8px;
     border-radius: 5px;
+    height: 10px;
+    margin: 0;
+    position: relative;
+    top: -10px;
 }
 
 #text .tlacitko {
@@ -292,11 +384,6 @@ select option:disabled {
 .kontejner>div {
     display: flex;
     gap: 15px;
-}
-
-.kontejner>div>button {
-    width: auto;
-    padding: 0 12px;
 }
 
 #delka {

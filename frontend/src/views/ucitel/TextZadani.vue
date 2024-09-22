@@ -12,9 +12,18 @@ function scrollDiv() {
 
 watch(text, () => {
     let t = text.value
-        .replace(/\n$/g, "\n\n")
+        .replace(/[&<>'"]/g,
+            tag =>
+            ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "'": "&#39;",
+                '"': "&quot;"
+            }[tag] || tag)
+        )
         .replace(/(\r\n|\r|\n)/g, "↵\n")
-        .replace(/(^ )|( {2,})|(↵\n)|( $)|!(.(\r\n|\r|\n))|([^A-Za-z0-9ěščřžýáíéůúťďňóĚŠČŘŽÝÁÍÉŮÚŤĎŇÓ ,.!?;:_=+\-*/%()[\]{}<>])/g, `<m style='background-color: rgba(255, 0, 0, 0.4); font-family: "Red Hat Mono", monospace; border-radius: 3px'>$&</m>`)
+        .replace(/(^ )|( {2,})|(↵\n)|( $)|!(.(\r\n|\r|\n))|([^A-Za-z0-9ěščřžýáíéůúťďňóĚŠČŘŽÝÁÍÉŮÚŤĎŇÓ ,.!?;:_=+\-*/%()[\]{}<>] && (?!&.{2, 4};))/g, `<m style='background-color: rgba(255, 0, 0, 0.4); font-family: "Red Hat Mono", monospace; border-radius: 3px'>$&</m>`)
     // krejzy https://codersblock.com/blog/highlight-text-inside-a-textarea/
     div.value!.innerHTML = t
 })
@@ -24,20 +33,21 @@ defineExpose({ text })
 </script>
 <template>
     <div ref="div"></div>
-    <textarea ref="textarea" placeholder="Text který budou žáci psát..." v-model="text" @scroll="scrollDiv"/>
+    <textarea ref="textarea" placeholder="Text který budou žáci psát..." v-model="text" @scroll="scrollDiv" />
 </template>
 <style scoped>
 div {
     position: absolute;
     padding: 10px;
     width: 410px;
-    height: calc(100vh - 90px - 60px - 40px - 25px - 30px - 5px - 40px - 15px); /* celá obrazovka - všechno co je nad tím */
+    height: calc(100vh - 60px - 40px - 25px - 30px - 40px - 11px);
+    /* celá obrazovka - všechno co je nad tím */
     text-align: start;
-    top: 275px;
+    top: 145px;
     word-wrap: break-word;
     z-index: 1;
     background-color: var(--tmave-fialova);
-    border-radius: 8px;
+    border-radius: 5px;
     font-size: 1rem !important;
     overflow-y: auto;
     text-decoration: none;
@@ -52,7 +62,6 @@ div {
 
 textarea {
     background-color: transparent;
-    color: blue;
     border: 0;
     height: 100%;
     width: 100%;
@@ -79,7 +88,7 @@ textarea::-webkit-scrollbar {
 textarea::-webkit-scrollbar-track {
     background: var(--tmave-fialova);
     /* Color of the track */
-    border-radius: 3px;
+    border-radius: 5px;
     padding: 1px;
     cursor: default;
 }

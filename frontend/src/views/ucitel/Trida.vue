@@ -4,10 +4,10 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
-import { moznostiRocnik, moznostiTrida, moznostiSkupina } from "../../stores";
 import ZadaniPrace from "./ZadaniPrace.vue";
 import { useHead } from "@unhead/vue";
 import Tooltip from "../../components/Tooltip.vue";
+import NastaveniTridy from "./NastaveniTridy.vue";
 
 const id = useRoute().params.id
 
@@ -18,7 +18,7 @@ const prace = ref([] as Prace[])
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
 const vsechnyTridy = ref([] as { id: string, jmeno: string, kod: string, zamknuta: boolean, pocet_studentu: number, pocet_praci: number }[])
 
-const tab = ref("zaci") // zaci, prace, zadani
+const tab = ref("zaci") // zaci, prace, zadani, nastaveni
 
 const selectnutej = ref(-1)
 const studentOznacenej = ref({ jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, rychlost: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map })
@@ -26,17 +26,17 @@ const cpmVPracich = ref(new Map<number, number>())
 const presnostVPracich = ref(new Map<number, number>())
 
 const upravaStudenta = ref(false)
-const upravaTridy = ref("nic")
 const jmenoUprava = ref()
-const tridaJmenoUprava = ref()
-const tridaRocnikUprava = ref()
-const tridaSkupinaUprava = ref()
 
 const studentTridaZmena = ref()
 
 const nacitamStudenta = ref(false)
 
 const router = useRouter()
+
+const smazatPraciID = ref(0)
+
+const nastaveni = ref()
 
 onMounted(() => {
     get()
@@ -50,7 +50,7 @@ function get() {
     }).then(response => {
         trida.value = response.data.trida
         studenti.value = response.data.studenti
-        studenti.value.sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno))
+        studenti.value.sort((a: { jmeno: string; }, b: { jmeno: string; }) => a.jmeno.localeCompare(b.jmeno))
 
         prace.value = []
         for (let i = 0; i < response.data.prace.length; i++) {
@@ -58,20 +58,16 @@ function get() {
             let p: Prace = { id: prace1.id, text: prace1.text, cas: prace1.cas, datum: new Date(prace1.datum), prumerneCPM: prace1.prumerne_cpm, prumernaPresnost: prace1.prumerna_presnost, StudentuDokoncilo: prace1.studentu_dokoncilo }
             prace.value.push(p)
         }
-        prace.value.sort((a: any, b: any) => b.datum.getTime() - a.datum.getTime())
+        prace.value.sort((a: { datum: Date; }, b: { datum: Date; }) => b.datum.getTime() - a.datum.getTime())
 
-        let a = trida.value.jmeno.split(/[\. ]/)
-        tridaJmenoUprava.value = a[1]
-        tridaRocnikUprava.value = a[0] + (isNaN(+a[0]) ? " " : ".")
-        tridaSkupinaUprava.value = a[3] == undefined ? "-" : a[3]
-
-        vsechnyTridy.value = response.data.ostatniTridy.sort((a: any, b: any) => a.jmeno.localeCompare(b.jmeno))
+        vsechnyTridy.value = response.data.ostatniTridy.sort((a: { jmeno: string; }, b: { jmeno: string; }) => a.jmeno.localeCompare(b.jmeno))
         studentTridaZmena.value = trida.value.id
 
         useHead({
             title: trida.value.jmeno
         })
     }).catch(e => {
+        console.log(e)
         if (checkTeapot(e)) return
         if (e.response.data.error == "sql: no rows in result set") {
             pridatOznameni("Taková třída neexistuje")
@@ -79,22 +75,6 @@ function get() {
             return
         }
         pridatOznameni("Chyba serveru")
-    })
-}
-
-function zamek() {
-    trida.value.zamknuta = !trida.value.zamknuta
-
-    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "zamek" }, {
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
-        trida.value.zamknuta = !trida.value.zamknuta
     })
 }
 
@@ -150,7 +130,7 @@ function zmenaJmena(e: Event) {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
-    }).then(_ => {
+    }).then(() => {
         upravaStudenta.value = false
         studentOznacenej.value.jmeno = jmenoUprava.value
         get()
@@ -175,7 +155,7 @@ function zmenaStudentTridy(e: Event) {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
-    }).then(_ => {
+    }).then(() => {
         upravaStudenta.value = false
         get()
         selectnutej.value = -1
@@ -188,12 +168,12 @@ function zmenaStudentTridy(e: Event) {
     })
 }
 
-function prejmenovatTridu(e: Event) {
+function prejmenovatTridu(e: Event, novyJmeno: string) {
     e.preventDefault()
 
     let staryJmeno = trida.value.jmeno
-    trida.value.jmeno = `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ ' + tridaSkupinaUprava.value : ''}`
-    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ ' + tridaSkupinaUprava.value : ''}` }, {
+    trida.value.jmeno = novyJmeno
+    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "jmeno", hodnota: novyJmeno }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
@@ -206,32 +186,29 @@ function prejmenovatTridu(e: Event) {
     })
 }
 
-function smazatTridu(e: Event) {
-    e.preventDefault()
+function zadano() {
+    tab.value = "prace"
+    get()
+}
 
-    axios.post("/skola/zmena-tridy", { trida_id: trida.value.id, zmena: "smazat" }, {
+function smazatPraci(prace: Prace) {
+    if (prace.StudentuDokoncilo != 0) {
+        if (!confirm(`Tuto práci už dokončilo ${prace.StudentuDokoncilo} studentů! Opravdu ji chcete smazat?`)) return
+    }
+
+    axios.delete("/skola/smazat-praci/" + prace.id, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(() => {
-        router.push("/skola")
-        pridatOznameni(`Třída "${trida.value.jmeno}", byla smazána.`)
+        get()
+        pridatOznameni("Práce byla smazána.")
     }).catch(e => {
         if (!checkTeapot(e)) {
             console.log(e)
             pridatOznameni("Chyba serveru")
         }
     })
-}
-
-function copy() {
-    navigator.clipboard.writeText(trida.value.kod)
-    pridatOznameni("Zkopírováno!", undefined, "copy")
-}
-
-function zadano() {
-    tab.value = "prace"
-    get()
 }
 
 </script>
@@ -241,60 +218,22 @@ function zadano() {
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
 
-    <div id="dashboard">
-        <div id="prepinac-tabu">
-            <h3>Přepnout pohled:</h3>
-            <button v-if="tab == 'zaci'" class="tlacitko" @click="tab = 'prace'">Práce</button>
-            <button v-else class="tlacitko" @click="tab = 'zaci'">Žáci</button>
-        </div>
-        <div id="kod">
-            <div>
-                <span @click="copy" :class="{ 'zamknuty-kod': trida.zamknuta }">{{ trida.kod == undefined ? "------" : trida.kod }}</span>
-                <Tooltip zprava="Uzamknout/Odemknout přístup novým žákům do této třídy" :sirka="192" :vzdalenost="12">
-                    <img v-if="!trida.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída" @click="zamek()">
-                    <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída" @click="zamek()">
-                </Tooltip>
-            </div>
-            <span :class="{ 'zamknuty-kod': trida.zamknuta }">jakopavouk.cz/zapis/{{ trida.kod }}</span>
-        </div>
-        <div id="uprava-tridy">
-            <form v-if="upravaTridy == 'nic'">
-                <button class="tlacitko" @click="upravaTridy = 'jmeno'">Přejmenovat</button>
-                <button class="tlacitko" @click="upravaTridy = 'smazat'">
-                    <img src="../../assets/icony/trash.svg" alt="Smazat" width="25" height="25" style="filter: brightness(0.9);">
-                </button>
-            </form>
-            <form v-else-if="upravaTridy == 'jmeno'" id="prejmenovani-tridy">
-                <div>
-                    <select v-model="tridaRocnikUprava">
-                        <option v-for="v in moznostiRocnik" :value="v">{{ v }}</option>
-                    </select>
-                    <select v-model="tridaJmenoUprava">
-                        <option v-for="v in moznostiTrida" :value="v">{{ v }}</option>
-                    </select>
-                    <select v-model="tridaSkupinaUprava">
-                        <option v-for="v in moznostiSkupina" :value="v">{{ v }}</option>
-                    </select>
-                </div>
-                <div>
-                    <button class="tlacitko" @click="prejmenovatTridu"
-                        :disabled="`${tridaRocnikUprava}${tridaJmenoUprava}${tridaSkupinaUprava != '-' ? ' ￨ ' + tridaSkupinaUprava : ''}` == trida.jmeno">Potvrdit</button>
-                    <button class="tlacitko" @click="upravaTridy = 'nic'">Zpět</button>
-                </div>
-            </form>
-            <form v-else-if="upravaTridy == 'smazat'">
-                <button class="cervene-tlacitko" @click="smazatTridu">Opravdu smazat?</button>
-                <button class="tlacitko" @click="upravaTridy = 'nic'">
-                    <img src="../../assets/icony/plus.svg" alt="Smazat" width="28" height="28"
-                        style="filter: brightness(0.9); transform: rotate(45deg);">
-                </button>
-            </form>
-        </div>
+    <div v-if="tab != 'zadani'" id="prepinac-tabu">
+        <input id="r1" type="radio" value="zaci" v-model="tab">
+        <label for="r1">Studenti</label>
+
+        <input id="r2" type="radio" value="prace" v-model="tab">
+        <label for="r2">Práce</label>
+
+        <input id="r3" type="radio" value="nastaveni" v-model="tab">
+        <label for="r3">Nastavení</label>
+
+        <span></span>
     </div>
 
     <div v-if="tab == 'zaci'" id="pulic">
         <div id="kontejner">
-            <div v-for="st in studenti" class="blok" @click="select(st.id)" :class="{ oznaceny: selectnutej == st.id }">
+            <div v-for="st in studenti" class="blok" @click="select(st.id)" :class="{ oznaceny: selectnutej == st.id }" :key="st.id">
                 <div>
                     <h3>{{ st.jmeno }}</h3>
                     <h4>{{ st.email }}</h4>
@@ -319,7 +258,7 @@ function zadano() {
                     <div>
                         <select v-model="studentTridaZmena">
                             <option :value="-1">Odebrat</option>
-                            <option v-for="v in vsechnyTridy" :value="v.id">{{ v.jmeno }}</option>
+                            <option v-for="v in vsechnyTridy" :value="v.id" :key="v.id">{{ v.jmeno }}</option>
                         </select>
                         <button type="submit" @click="zmenaJmena($event); zmenaStudentTridy($event)" class="tlacitko" id="ulozit">Potvrdit</button>
                     </div>
@@ -354,7 +293,7 @@ function zadano() {
                 <div v-if="prace.length == 0" style="margin-top: 40px; width: 100%; border: none;">
                     <span>Zatím žádné práce nebyly zadány</span>
                 </div>
-                <div v-else v-for="p, i in prace.slice(0, 3)">
+                <div v-else v-for="p, i in prace.slice(0, 3)" :key="i">
                     <h4>Práce {{ prace.length - i }}</h4>
                     <span>{{ p.datum.toLocaleDateString("cs-CZ") }}</span>
 
@@ -373,38 +312,79 @@ function zadano() {
             <h2 v-if="studenti.length != 0">Vyberte studenta!</h2>
         </div>
     </div>
-    <div v-else-if="tab == 'prace'" id="prace-kontejner">
-        <div v-for="v, i in prace" class="prace">
-            <Tooltip :zprava="`<b>${v.cas / 60} min</b> | ${v.text.slice(0, 100)}...`" :sirka="300" :vzdalenost="3">
-                <div class="nadpis-prace">
-                    <h2>Práce {{ prace.length - i }}</h2>
-                    <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
-                </div>
-            </Tooltip>
-
-            <div class="statistika">
-                <Tooltip v-if="v.prumerneCPM != -1" zprava="Průměrná rychlost studentů" :sirka="160" :vzdalenost="5">
-                    <span><b>{{ naJednoDesetiny(v.prumerneCPM) }}</b> CPM</span>
-                </Tooltip>
-                <Tooltip v-if="v.prumernaPresnost != -1" zprava="Průměrná přesnost studentů" :sirka="160" :vzdalenost="5">
-                    <span><b>{{ naJednoDesetiny(v.prumernaPresnost) }}</b> %</span>
-                </Tooltip>
-                <Tooltip zprava="Studentů kteří mají hotovo" :sirka="160" :vzdalenost="5">
-                    <span class="udaj2"><b>{{ v.StudentuDokoncilo }}</b>/<b>{{ studenti.length }}</b></span>
-                </Tooltip>
+    <div v-else-if="tab == 'prace'" id="pulic-praci">
+        <div id="prace-smazat-kontejner">
+            <div v-for="v in prace" :key="v.id">
+                <img v-if="smazatPraciID == 0" src="../../assets/icony/trash.svg" alt="Smazat práci" @click="smazatPraciID = v.id">
+                <img v-else :style="{ visibility: smazatPraciID == v.id ? 'visible' : 'hidden' }" style="padding: 6px; width: 40px;"
+                    src="../../assets/icony/right.svg" alt="Smazat práci" @click="smazatPraci(v)" @mouseleave="smazatPraciID = 0">
             </div>
         </div>
-        <span v-if="prace.length == 0" id="text-zaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
+        <div id="prace-kontejner">
+            <div v-for="v, i in prace" :key="i" class="prace">
+                <Tooltip :zprava="`<b>${v.cas / 60} min</b> | ${v.text.slice(0, 100)}...`" :sirka="300" :vzdalenost="3">
+                    <div class="nadpis-prace">
+                        <h2>Práce {{ prace.length - i }}</h2>
+                        <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
+                    </div>
+                </Tooltip>
+
+                <div class="statistika">
+                    <Tooltip v-if="v.prumerneCPM != -1" zprava="Průměrná rychlost studentů" :sirka="160" :vzdalenost="5">
+                        <span><b>{{ naJednoDesetiny(v.prumerneCPM) }}</b> CPM</span>
+                    </Tooltip>
+                    <Tooltip v-if="v.prumernaPresnost != -1" zprava="Průměrná přesnost studentů" :sirka="160" :vzdalenost="5">
+                        <span><b>{{ naJednoDesetiny(v.prumernaPresnost) }}</b> %</span>
+                    </Tooltip>
+                    <Tooltip zprava="Studentů kteří mají hotovo" :sirka="160" :vzdalenost="5">
+                        <span class="udaj2"><b>{{ v.StudentuDokoncilo }}</b>/<b>{{ studenti.length }}</b></span>
+                    </Tooltip>
+                </div>
+            </div>
+            <span v-if="prace.length == 0" id="text-zaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
+        </div>
     </div>
 
     <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" />
+    <NastaveniTridy v-else-if="tab == 'nastaveni'" ref="nastaveni" :trida="trida" :pocetStudentu="vsechnyTridy.find(t => t.id === String(trida.id))!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" />
 
-    <div v-if="tab != 'zaci'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')"
+    <div v-if="tab == 'prace' || tab == 'zadani'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')"
         :style="{ transform: tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">
         <img src="../../assets/icony/plus.svg" alt="Přidat">
     </div>
+
 </template>
 <style scoped>
+#prace-smazat-kontejner {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#prace-smazat-kontejner>div {
+    padding: 10px 0px 10px 10px;
+    display: flex;
+}
+
+#prace-smazat-kontejner>div>img {
+    height: 40px;
+    cursor: pointer;
+    transition: 0.15s;
+    padding: 10px;
+}
+
+#prace-smazat-kontejner>div>img:hover {
+    height: 40px;
+    padding: 7px;
+}
+
+#pulic-praci {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    margin-right: 50px;
+}
+
 .udaj2 {
     font-size: 1.6rem !important;
     min-width: 95px !important;
@@ -474,15 +454,6 @@ form input::placeholder {
     height: 100%;
 }
 
-#posledni-prace>h3 {
-    font-size: 1.15rem;
-    font-weight: 500;
-    grid-area: nadpis;
-    align-self: center;
-    justify-self: center;
-    margin-bottom: 3px;
-}
-
 #posledni-prace>div>span {
     font-size: 0.9rem;
 }
@@ -526,10 +497,10 @@ form input::placeholder {
 }
 
 #prace-kontejner {
-    width: 75%;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    width: 90%;
 }
 
 .prace {
@@ -576,70 +547,58 @@ form input::placeholder {
     transition: background-color 0.15s, transform 0.3s;
     z-index: 10;
     box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.75);
+    user-select: none;
 }
 
 #pridat:hover {
     background-color: var(--fialova);
 }
 
-.zamknuty-kod {
-    color: rgba(255, 255, 255, 0.3);
-    text-decoration: line-through;
-}
-
-#uprava-tridy {
-    width: 250px;
+#prepinac-tabu {
+    display: flex;
+    padding: 8px;
+    border-radius: 100px;
     background-color: var(--tmave-fialova);
-    border-radius: 10px;
-    padding: 10px 15px;
+    margin: 20px 0;
+    height: 46px;
 }
 
-#uprava-tridy form {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    height: 100%;
+#prepinac-tabu input {
+    display: none;
 }
 
-#uprava-tridy form .tlacitko,
-#uprava-tridy form .cervene-tlacitko {
-    margin: 0;
-    padding: 0 15px;
-    width: 130px;
-}
-
-#uprava-tridy form .tlacitko:has(img) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#uprava-tridy form .tlacitko:nth-child(2) {
-    padding: 1px;
-    aspect-ratio: 1/1;
-    width: 40px;
-}
-
-#prepinac-tabu .tlacitko {
+#prepinac-tabu label {
+    padding: 5px;
     width: 100px;
-    align-self: center;
+    z-index: 1;
+    cursor: pointer;
+    color: #c5c5c5;
+    transition: 0.15s;
 }
 
-#prejmenovani-tridy {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+#prepinac-tabu input:checked+label {
+    color: var(--bila);
 }
 
-#prejmenovani-tridy div {
-    display: flex;
-    gap: 10px;
+#prepinac-tabu span {
+    position: absolute;
+    background-color: var(--fialova);
+    width: 100px;
+    height: 30px;
+    border-radius: 100px;
+    transition: 0.15s ease-in-out;
 }
 
-#prejmenovani-tridy div .tlacitko {
-    height: 28px;
-    min-width: 50px;
+input[id="r1"]:checked~span {
+    transform: translateX(0px);
+}
+
+input[id="r2"]:checked~span {
+    transform: translateX(100px);
+}
+
+input[id="r3"]:checked~span {
+    transform: translateX(200px);
 }
 
 #pred-kliknutim {
@@ -664,71 +623,6 @@ form input::placeholder {
 .tlacitko {
     width: auto;
     padding: 0 15px;
-}
-
-#prepinac-tabu {
-    background-color: var(--tmave-fialova);
-    padding: 10px 15px;
-    border-radius: 10px;
-    width: 250px;
-    display: flex;
-    flex-direction: column;
-}
-
-#kod {
-    background-color: var(--tmave-fialova);
-    padding: 10px;
-    border-radius: 8px;
-    transition: 0.1s;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 250px;
-}
-
-#kod div {
-    font-size: 2rem;
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-}
-
-#kod div span {
-    font-weight: 500;
-    padding: 0 6px;
-    transition: 0.2s;
-    border-radius: 8px;
-}
-
-#kod>span {
-    transition: 0.2s;
-}
-
-#kod div span:hover {
-    background-color: var(--fialova);
-    cursor: grab;
-}
-
-#kod img {
-    width: 30px;
-    height: 30px;
-    position: relative;
-    top: 4px;
-    transition: 0.2s;
-    cursor: pointer;
-}
-
-#kod img:hover {
-    transform: scale(1.1);
-}
-
-#dashboard {
-    width: 115%;
-    height: 90px;
-    margin: 20px 0 40px 0;
-    display: flex;
-    gap: 30px;
-    justify-content: center;
 }
 
 #pulic {
@@ -805,7 +699,7 @@ form input::placeholder {
 #vrsek form>div {
     display: flex;
     align-items: center;
-    gap: 40px;
+    justify-content: space-between;
     width: 100%;
 }
 

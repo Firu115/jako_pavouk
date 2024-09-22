@@ -8,6 +8,7 @@ import ZadaniPrace from "./ZadaniPrace.vue";
 import { useHead } from "@unhead/vue";
 import Tooltip from "../../components/Tooltip.vue";
 import NastaveniTridy from "./NastaveniTridy.vue";
+import KodTridy from "../../components/KodTridy.vue";
 
 const id = useRoute().params.id
 
@@ -240,7 +241,11 @@ function smazatPraci(prace: Prace) {
                 </div>
                 <span><b>{{ naJednoDesetiny(st.cpm) }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
-            <div v-if="studenti.length == 0" id="text-zaci">Tady uvidíte všechny žáky... <br>Sdělte jim kód nahoře, aby se mohli připojit.</div>
+            <div v-if="studenti.length == 0" id="text-zaci">
+                Tady uvidíte všechny žáky... <br>
+                <KodTridy :id="trida.id" :kod="trida.kod" :zamknuta="trida.zamknuta" />
+                Sdělte jim tento kód, aby se mohli připojit.
+            </div>
         </div>
         <div v-if="selectnutej != -1" class="detail">
             <div id="vrsek">
@@ -346,7 +351,8 @@ function smazatPraci(prace: Prace) {
     </div>
 
     <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" />
-    <NastaveniTridy v-else-if="tab == 'nastaveni'" ref="nastaveni" :trida="trida" :pocetStudentu="vsechnyTridy.find(t => t.id === String(trida.id))!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" />
+    <NastaveniTridy v-else-if="tab == 'nastaveni'" ref="nastaveni" :trida="trida"
+        :pocetStudentu="vsechnyTridy.find(t => t.id === String(trida.id))!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" />
 
     <div v-if="tab == 'prace' || tab == 'zadani'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')"
         :style="{ transform: tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">
@@ -492,6 +498,8 @@ form input::placeholder {
 #text-zaci {
     height: 380px;
     display: flex;
+    flex-direction: column;
+    gap: 20px;
     align-items: center;
     justify-content: center;
 }

@@ -587,6 +587,7 @@ form input::placeholder {
 }
 
 #prepinac-tabu input:checked+label {
+    font-weight: 400;
     color: var(--bila);
 }
 
@@ -596,7 +597,7 @@ form input::placeholder {
     width: 100px;
     height: 30px;
     border-radius: 100px;
-    transition: 0.15s ease-in-out;
+    transition: 0.15s ease-out;
 }
 
 input[id="r1"]:checked~span {

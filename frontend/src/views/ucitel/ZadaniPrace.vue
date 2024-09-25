@@ -32,7 +32,7 @@ onMounted(() => {
         pridatOznameni("Chyba serveru")
     })
 
-    axios.get("/skola/typy-cviceni").then(response => {
+    axios.get("/skola/typy-cviceni", { params: { trida_id: props.tridaID} }).then(response => {
         for (const k in response.data) {
             mapa.set(k, response.data[k].sort((a: { id: number, lekce_id: number, pismena: string }, b: { id: number, lekce_id: number, pismena: string }) => a.lekce_id - b.lekce_id))
         }
@@ -46,23 +46,11 @@ onMounted(() => {
 function getText() {
     if (typTextu.value == "") return
 
-    if (typTextu.value == "1" || typTextu.value == "2" || typTextu.value == "3" || typTextu.value == "4") {
-        axios.get("/cvic/" + lekceTextu.value.pismena + "/" + lekceTextu.value.id, {
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        }).then(response => {
-            if (textovePole.value?.text.length != 0 && textovePole.value?.text[textovePole.value?.text.length - 1] != " ") textovePole.value!.text += " "
-            textovePole.value!.text += response.data.text.join("").slice(0, -1)
-        }).catch(e => {
-            if (checkTeapot(e)) return
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        })
-        return
-    }
-
-    axios.post("/skola/text", { "typ": typTextu.value }, {
+    axios.post("/skola/text", {
+        "typ": typTextu.value,
+        "z_lekce": lekceTextu.value.pismena,
+        "trida_id": props.tridaID
+    }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
@@ -149,6 +137,7 @@ function getZnakyASlova() {
 }
 
 function upravaSelectuLekci() {
+    lekce.value = []
     switch (typTextu.value) {
         case "1":
             lekce.value = mapa.get("nova")!
@@ -226,7 +215,7 @@ function upravaSelectuLekci() {
                 <select v-model="lekceTextu" :disabled="typTextu != '1' && typTextu != '2' && typTextu != '3' && typTextu != '4'"
                     style="width: 121px;">
                     <option value="" style="color: #a1a1a1;">Vybrat lekci</option>
-                    <option v-for="l in lekce" :value="l" :key="l.id">{{ format(l.pismena) }}</option>
+                    <option v-for="l in lekce" :value="l" :key="l.pismena">{{ format(l.pismena) }}</option>
                 </select>
                 <button class="tlacitko" @click="getText"
                     :disabled="typTextu == '' || ((typTextu == '1' || typTextu == '2' || typTextu == '3' || typTextu == '4') && lekceTextu == '')">

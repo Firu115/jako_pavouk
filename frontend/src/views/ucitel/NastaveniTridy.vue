@@ -5,6 +5,7 @@ import { moznostiRocnik, moznostiTrida, moznostiSkupina } from "../../stores";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import KodTridy from "../../components/KodTridy.vue";
+import Tooltip from "../../components/Tooltip.vue";
 
 const emit = defineEmits(["prejmenovatTridu", "refresh"])
 
@@ -115,7 +116,9 @@ const tridaJmeno = computed(() => {
 
         <hr>
 
-        <h3>Preference klávesnice:</h3>
+        <Tooltip zprava="Klávesnice ovlivňuje pouze to, jak se generují texty typu: <b>Naučená písmena / Slova</b>, v lekcích t,z - y,x,m. Tam se totiž množina již naučených písmen liší klávesami Z a Y." :sirka="380" :vzdalenost="8">
+            <h3>Preference klávesnice:</h3>
+        </Tooltip>
         <form>
             <input type="checkbox" id="toggle1" class="toggle-checkbox" v-model="klavesniceUprava" />
             <label for="toggle1" class="toggle-contejner">
@@ -132,6 +135,8 @@ const tridaJmeno = computed(() => {
         <form>
             <button type="button" class="cervene-tlacitko" @click="smazatTridu">Smazat třídu</button>
         </form>
+
+        <span style="opacity: 0.5; font-size: 0.9rem; margin-top: 16px; border-top: 2px solid gray; padding-top: 8px;">Nastavení budu muset ještě zkrášlit... :)</span>
     </div>
 </template>
 <style scoped>

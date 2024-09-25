@@ -116,7 +116,9 @@ const tridaJmeno = computed(() => {
 
         <hr>
 
-        <Tooltip zprava="Klávesnice ovlivňuje pouze to, jak se generují texty typu: <b>Naučená písmena / Slova</b>, v lekcích t,z - y,x,m. Tam se totiž množina již naučených písmen liší klávesami Z a Y." :sirka="380" :vzdalenost="8">
+        <Tooltip
+            zprava="Klávesnice ovlivňuje pouze to, jak se generují texty typu: <b>Naučená písmena / Slova</b>, v lekcích t,z - y,x,m. Tam se totiž množina již naučených písmen liší klávesami Z a Y."
+            :sirka="380" :vzdalenost="8">
             <h3>Preference klávesnice:</h3>
         </Tooltip>
         <form>
@@ -126,7 +128,7 @@ const tridaJmeno = computed(() => {
                 <div>Qwerty</div>
             </label>
 
-            <button class="tlacitko" @click="postKlavesnice" :disabled="klavesniceUprava == props.trida.klavesnice">Potvrdit</button>
+            <button class="tlacitko" @click="postKlavesnice" :disabled="klavesniceUprava == (props.trida.klavesnice == 'qwerty')">Potvrdit</button>
         </form>
 
         <hr>
@@ -136,7 +138,8 @@ const tridaJmeno = computed(() => {
             <button type="button" class="cervene-tlacitko" @click="smazatTridu">Smazat třídu</button>
         </form>
 
-        <span style="opacity: 0.5; font-size: 0.9rem; margin-top: 16px; border-top: 2px solid gray; padding-top: 8px;">Nastavení budu muset ještě zkrášlit... :)</span>
+        <span style="opacity: 0.5; font-size: 0.9rem; margin-top: 16px; border-top: 2px solid gray; padding-top: 8px;">Nastavení budu muset ještě
+            zkrášlit... :)</span>
     </div>
 </template>
 <style scoped>

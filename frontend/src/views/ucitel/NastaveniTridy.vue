@@ -5,7 +5,6 @@ import { moznostiRocnik, moznostiTrida, moznostiSkupina } from "../../stores";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import KodTridy from "../../components/KodTridy.vue";
-import Tooltip from "../../components/Tooltip.vue";
 
 const emit = defineEmits(["prejmenovatTridu", "refresh"])
 
@@ -72,10 +71,8 @@ function postKlavesnice(e: Event) {
     }).then(() => {
         emit("refresh")
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
     })
 }
 
@@ -94,120 +91,127 @@ const tridaJmeno = computed(() => {
 
 </script>
 <template>
-    <KodTridy :kod="trida.kod" :id="trida.id" :zamknuta="trida.zamknuta" />
     <div id="uprava-tridy">
-        <h3>Přejmenovat třídu:</h3>
-        <form id="prejmenovani-tridy">
+        <KodTridy :kod="trida.kod" :id="trida.id" :zamknuta="trida.zamknuta" />
+
+        <form>
             <div>
+                <h3>Ročník:</h3>
                 <select v-model="tridaRocnikUprava">
                     <option v-for="v in moznostiRocnik" :value="v" :key="v">{{ v }}</option>
                 </select>
+            </div>
+
+            <div>
+                <h3>Písmeno:</h3>
                 <select v-model="tridaJmenoUprava">
                     <option v-for="v in moznostiTrida" :value="v" :key="v">{{ v }}</option>
                 </select>
+            </div>
+
+            <div>
+                <h3>Skupina:</h3>
                 <select v-model="tridaSkupinaUprava">
                     <option v-for="v in moznostiSkupina" :value="v" :key="v">{{ v }}</option>
                 </select>
             </div>
+
+            <button class="tlacitko" @click="emit('prejmenovatTridu', $event, tridaJmeno)" :disabled="tridaJmeno == trida.jmeno">Potvrdit</button>
+
+            <span>Podle jména se třídy řadí do ročníků v seznamu tříd.</span>
+            <span>
+                Skupina je určena pro rozdělení třídy na skupiny žáků. Např.: <b>3.B&nbsp;￨&nbsp;1</b> a <b>3.B&nbsp;￨&nbsp;2</b> To se může hodit,
+                pokud vyučujete třídy po skupinkách.
+            </span>
+        </form>
+
+        <form>
             <div>
-                <button class="tlacitko" @click="emit('prejmenovatTridu', $event, tridaJmeno)" :disabled="tridaJmeno == trida.jmeno">Potvrdit</button>
+                <h3>Preference klávesnice:</h3>
+
+                <input type="checkbox" id="toggle1" class="toggle-checkbox" v-model="klavesniceUprava" @change="postKlavesnice" />
+                <label for="toggle1" class="toggle-contejner">
+                    <div>Qwertz</div>
+                    <div>Qwerty</div>
+                </label>
+            </div>
+
+            <span>
+                Klávesnice ovlivňuje pouze to, jak se generují texty typu: <b>Naučená písmena &amp; Slova</b>, v lekcích <b>t,z - y,x,m</b>. Tam se
+                totiž
+                množina již naučených písmen liší klávesami Z a Y.
+            </span>
+            <span>Žákům, kteří mají jinou klácesnici než jaká je nastavena v jejich třídě, se u třídy zobrazí varování.</span>
+        </form>
+
+        <form>
+            <div>
+                <h3>Smazání třídy:</h3>
+                <button type="button" class="cervene-tlacitko" @click="smazatTridu">Smazat třídu</button>
             </div>
         </form>
-
-        <hr>
-
-        <Tooltip
-            zprava="Klávesnice ovlivňuje pouze to, jak se generují texty typu: <b>Naučená písmena / Slova</b>, v lekcích t,z - y,x,m. Tam se totiž množina již naučených písmen liší klávesami Z a Y."
-            :sirka="380" :vzdalenost="8">
-            <h3>Preference klávesnice:</h3>
-        </Tooltip>
-        <form>
-            <input type="checkbox" id="toggle1" class="toggle-checkbox" v-model="klavesniceUprava" />
-            <label for="toggle1" class="toggle-contejner">
-                <div>Qwertz</div>
-                <div>Qwerty</div>
-            </label>
-
-            <button class="tlacitko" @click="postKlavesnice" :disabled="klavesniceUprava == (props.trida.klavesnice == 'qwerty')">Potvrdit</button>
-        </form>
-
-        <hr>
-
-        <h3>Smazat třídu:</h3>
-        <form>
-            <button type="button" class="cervene-tlacitko" @click="smazatTridu">Smazat třídu</button>
-        </form>
-
-        <span style="opacity: 0.5; font-size: 0.9rem; margin-top: 16px; border-top: 2px solid gray; padding-top: 8px;">Nastavení budu muset ještě
-            zkrášlit... :)</span>
     </div>
 </template>
 <style scoped>
-hr {
-    width: 80%;
-    margin: 10px;
-    align-self: center;
-}
-
 .toggle-contejner div {
     padding: 7px;
 }
 
 .toggle-contejner {
     font-size: 16px;
-    width: 190px;
+    width: 160px;
     height: 34px;
 }
 
 #uprava-tridy {
-    width: 70%;
-    background-color: var(--tmave-fialova);
-    border-radius: 10px;
-    padding: 10px 15px;
+    width: 60%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-#uprava-tridy form {
-    display: flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
-    height: 100%;
 }
 
-#uprava-tridy form .tlacitko,
-#uprava-tridy form .cervene-tlacitko {
+#uprava-tridy>form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--tmave-fialova);
+    border-radius: 10px;
+    padding: 15px 25px;
+}
+
+#uprava-tridy>form>div {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#uprava-tridy .tlacitko,
+#uprava-tridy .cervene-tlacitko {
     margin: 0;
     height: 34px;
-    padding: 0 15px;
+    padding: 0 25px;
     width: auto;
 }
 
-#uprava-tridy form .tlacitko:has(img) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+form>span {
+    opacity: 0.5;
+    font-size: 0.85rem;
+    margin-bottom: -4px;
 }
 
-#uprava-tridy form .tlacitko:nth-child(2) {
-    padding: 1px;
-    aspect-ratio: 1/1;
-    width: 40px;
+form span:first-of-type {
+    margin-top: 8px;
 }
 
-#prejmenovani-tridy {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+form span:last-of-type {
+    margin-bottom: 0;
 }
 
-#prejmenovani-tridy div {
-    display: flex;
-    gap: 10px;
-}
 
 /* firefox nenenene */
 @supports(-webkit-tap-highlight-color: black) {

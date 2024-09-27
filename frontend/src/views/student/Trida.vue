@@ -1,20 +1,25 @@
 <script setup lang="ts">
 import axios from "axios";
 import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
-import { onMounted, ref } from "vue";
-import { useHead } from "unhead"
-import router from "../../router";
+import { computed, onMounted, ref } from "vue";
+import { useHead } from "unhead";
 import { mobil } from "../../stores";
+import Tooltip from "../../components/Tooltip.vue";
+import { useRouter } from "vue-router";
 
 useHead({
     title: "Třída"
 })
 
-const trida = ref({} as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number })
+const router = useRouter()
+
+const trida = ref({} as { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number, klavesnice: string })
 const praceNove = ref([] as { id: number, cislo: number, datum: string, cpm: number, presnost: number }[])
 const praceDoko = ref([] as { id: number, cislo: number, datum: string, cpm: number, presnost: number }[])
 
 const nacitam = ref(false)
+
+const klavesniceStudenta = ref("")
 
 onMounted(() => {
     if (mobil.value) {
@@ -32,6 +37,7 @@ function get() {
         }
     }).then(response => {
         trida.value = response.data.trida
+        klavesniceStudenta.value = response.data.klavesnice
 
         praceNove.value = []
         response.data.prace.sort((a: { datum: string }, b: { datum: string }) => b.datum.localeCompare(a.datum))
@@ -42,7 +48,6 @@ function get() {
             if (prace1.cpm != -1) praceDoko.value.push(p)
             else praceNove.value.push(p)
         }
-
     }).catch(e => {
         if (checkTeapot(e)) return
         if (e.response.data.error == "sql: no rows in result set") {
@@ -56,9 +61,40 @@ function get() {
     })
 }
 
+function prvniVelky(s: string) {
+    if (!s) return "---------"
+    return s[0].toUpperCase() + s.slice(1)
+}
+
+const dobraKlavesnice = computed(() => {
+    if (klavesniceStudenta.value == "") return true
+    return klavesniceStudenta.value == trida.value.klavesnice
+})
+
+const zprava = computed(() => {
+    if (dobraKlavesnice.value) return "Používáš správnou klávesnici!"
+    return `Třída používá <b>${prvniVelky(trida.value.klavesnice)}</b>, zatímco ty používáš <b>${prvniVelky(klavesniceStudenta.value)}</b>. Nějaké texty by ti nemuseli sedět! Kliknutím to můžeš změnit.`
+})
+
+function zmenaKlavesnice() {
+    axios.post("/ucet-zmena", { "zmena": "klavesnice", "hodnota": trida.value.klavesnice }, { headers: { Authorization: `Bearer ${getToken()}` } }).then(() => {
+        praceDoko.value = []
+        praceNove.value = []
+        get()
+    }).catch(() => {
+        pridatOznameni()
+    })
+}
+
 </script>
 <template>
-    <h1>Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}</h1>
+    <h1>Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
+        <Tooltip @click="zmenaKlavesnice" :zprava="zprava" :sirka="230" :vzdalenost="2">
+            <span :class="{ blba: !dobraKlavesnice, dobra: dobraKlavesnice }">
+                {{ prvniVelky(trida.klavesnice) }}
+            </span>
+        </Tooltip>
+    </h1>
 
     <div v-if="!nacitam && (praceNove.length != 0 || praceDoko.length != 0)" id="kontejner">
         <h2>Čeká na dokončení</h2>
@@ -90,8 +126,35 @@ function get() {
     </div>
 
     <span v-if="praceNove.length == 0 && praceDoko.length == 0 && !nacitam" id="textZaci">Zatím tu nejsou žádné zadané práce.</span>
+
 </template>
 <style scoped>
+h1 {
+    margin-left: calc(65px + 10px);
+    display: flex;
+    gap: 10px;
+}
+
+h1 span {
+    font-size: 0.9rem;
+    border-radius: 100px;
+    padding: 5px;
+    position: relative;
+    top: -5px;
+    user-select: none;
+    transition: 0.15s;
+}
+
+h1 span.dobra {
+    background-color: rgba(0, 128, 0, 0.5);
+    border: 2px solid rgb(0, 128, 0);
+}
+
+h1 span.blba {
+    background-color: rgba(180, 0, 0, 0.5);
+    border: 2px solid rgb(170, 0, 0);
+}
+
 .statistika span b {
     font-family: "Red Hat Mono";
     font-size: 1.8rem;

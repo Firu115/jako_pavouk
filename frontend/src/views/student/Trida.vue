@@ -73,10 +73,11 @@ const dobraKlavesnice = computed(() => {
 
 const zprava = computed(() => {
     if (dobraKlavesnice.value) return "Používáš správnou klávesnici!"
-    return `Třída používá <b>${prvniVelky(trida.value.klavesnice)}</b>, zatímco ty používáš <b>${prvniVelky(klavesniceStudenta.value)}</b>. Nějaké texty by ti nemuseli sedět! Kliknutím to můžeš změnit.`
+    return `Třída používá <b>${prvniVelky(trida.value.klavesnice)}</b>, zatímco ty používáš <b>${prvniVelky(klavesniceStudenta.value)}</b>. Nějaké texty by ti nemuseli sedět! Kliknutím si ji změň.`
 })
 
 function zmenaKlavesnice() {
+    if (dobraKlavesnice.value) return
     axios.post("/ucet-zmena", { "zmena": "klavesnice", "hodnota": trida.value.klavesnice }, { headers: { Authorization: `Bearer ${getToken()}` } }).then(() => {
         praceDoko.value = []
         praceNove.value = []
@@ -89,7 +90,7 @@ function zmenaKlavesnice() {
 </script>
 <template>
     <h1>Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
-        <Tooltip @click="zmenaKlavesnice" :zprava="zprava" :sirka="230" :vzdalenost="2">
+        <Tooltip @click="zmenaKlavesnice" :zprava="zprava" :sirka="230" :vzdalenost="2" style="cursor: pointer;">
             <span :class="{ blba: !dobraKlavesnice, dobra: dobraKlavesnice }">
                 {{ prvniVelky(trida.klavesnice) }}
             </span>
@@ -153,6 +154,24 @@ h1 span.dobra {
 h1 span.blba {
     background-color: rgba(180, 0, 0, 0.5);
     border: 2px solid rgb(170, 0, 0);
+    animation: klavesniceSpatnaSviti 1s infinite 0.4s;
+}
+
+@keyframes klavesniceSpatnaSviti {
+    0% {
+        background-color: rgba(180, 0, 0, 0.5);
+        border: 2px solid rgb(170, 0, 0);
+    }
+
+    50% {
+        background-color: rgba(218, 0, 0, 0.5);
+        border: 2px solid rgb(255, 0, 0);
+    }
+
+    100% {
+        background-color: rgba(180, 0, 0, 0.5);
+        border: 2px solid rgb(170, 0, 0);
+    }
 }
 
 .statistika span b {

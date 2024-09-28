@@ -69,7 +69,6 @@ function get() {
         })
     }).catch(e => {
         console.log(e)
-        if (checkTeapot(e)) return
         if (e.response.data.error == "sql: no rows in result set") {
             pridatOznameni("Taková třída neexistuje")
             router.push("/skola")
@@ -242,7 +241,7 @@ function smazatPraci(prace: Prace) {
                 </div>
                 <span><b>{{ naJednoDesetiny(st.cpm) }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
-            <div v-if="studenti.length == 0" id="text-zaci">
+            <div v-if="studenti.length == 0 && trida.jmeno" id="text-zaci">
                 Tady uvidíte všechny žáky... <br>
                 <KodTridy :id="trida.id" :kod="trida.kod" :zamknuta="trida.zamknuta" />
                 Sdělte jim tento kód, aby se mohli připojit.

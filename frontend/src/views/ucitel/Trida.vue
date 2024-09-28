@@ -352,7 +352,8 @@ function smazatPraci(prace: Prace) {
         </div>
     </div>
 
-    <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" />
+
+    <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="prace[0].prumerneCPM" />
     <NastaveniTridy v-else-if="tab == 'nastaveni'" ref="nastaveni" :trida="trida"
         :pocetStudentu="vsechnyTridy.find(t => t.id === String(trida.id))!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" @refresh="get" />
 

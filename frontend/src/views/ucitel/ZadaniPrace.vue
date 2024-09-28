@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref, useTemplateRef } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 import TextZadani from "./TextZadani.vue";
 import axios from "axios";
-import { checkTeapot, getToken, pridatOznameni, format } from "../../utils";
+import { getToken, pridatOznameni, format } from "../../utils";
 import Tooltip from "../../components/Tooltip.vue";
 
 const props = defineProps({
     tridaID: Number,
+    posledniRychlost: Number
 })
 
 const emit = defineEmits(["zadano"])
@@ -27,18 +28,16 @@ onMounted(() => {
             texty.value.push({ jmeno: el.jmeno, obtiznost: el.obtiznost })
         })
         texty.value.sort((a: { obtiznost: number }, b: { obtiznost: number }) => { return a.obtiznost - b.obtiznost })
-    }).catch(e => {
-        if (checkTeapot(e)) return
+    }).catch(() => {
         pridatOznameni("Chyba serveru")
     })
 
-    axios.get("/skola/typy-cviceni", { params: { trida_id: props.tridaID} }).then(response => {
+    axios.get("/skola/typy-cviceni", { params: { trida_id: props.tridaID } }).then(response => {
         for (const k in response.data) {
             mapa.set(k, response.data[k].sort((a: { id: number, lekce_id: number, pismena: string }, b: { id: number, lekce_id: number, pismena: string }) => a.lekce_id - b.lekce_id))
         }
     }).catch(e => {
-        if (checkTeapot(e)) return
-        console.log(typeof e)
+        console.log(e)
         pridatOznameni("Chyba serveru")
     })
 })
@@ -49,7 +48,8 @@ function getText() {
     axios.post("/skola/text", {
         "typ": typTextu.value,
         "z_lekce": lekceTextu.value.pismena,
-        "trida_id": props.tridaID
+        "trida_id": props.tridaID,
+        "delka": odhadovanaDelkaTextu.value
     }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
@@ -58,7 +58,6 @@ function getText() {
         if (textovePole.value?.text.length != 0 && textovePole.value?.text[textovePole.value?.text.length - 1] != " ") textovePole.value!.text += " "
         textovePole.value!.text += response.data.text
     }).catch(e => {
-        if (checkTeapot(e)) return
         console.log(e)
         pridatOznameni("Chyba serveru")
     })
@@ -81,7 +80,6 @@ function pridatPraci() {
     }).then(() => {
         emit("zadano")
     }).catch(e => {
-        if (checkTeapot(e)) return
         console.log(e)
         pridatOznameni("Chyba serveru")
     })
@@ -158,6 +156,10 @@ function upravaSelectuLekci() {
     lekceTextu.value = ""
 }
 
+const odhadovanaDelkaTextu = computed(() => {
+    return Math.ceil((props.posledniRychlost! + 10) * (delka.value / 60))
+})
+
 </script>
 <template>
     <div id="pulic">
@@ -225,7 +227,13 @@ function upravaSelectuLekci() {
 
             <TextZadani ref="textove-pole" />
 
-            <span>{{ getZnakyASlova() }}</span>
+            <div>
+                <span>{{ getZnakyASlova() }}</span>
+                <Tooltip :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat do až konce. Počítá s rychlostí z poslední práce.`"
+                    :sirka="350" :vzdalenost="-78">
+                    <span>~ {{ odhadovanaDelkaTextu }} znaků</span>
+                </Tooltip>
+            </div>
         </div>
     </div>
 </template>
@@ -318,10 +326,9 @@ select option:disabled {
 }
 
 #text span {
-    display: block;
     align-self: flex-start;
+    display: flex;
     padding: 8px;
-    border-radius: 5px;
     height: 10px;
     margin: 0;
     position: relative;

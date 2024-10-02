@@ -229,7 +229,7 @@ const odhadovanaDelkaTextu = computed(() => {
 
             <div>
                 <span>{{ getZnakyASlova() }}</span>
-                <Tooltip :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat do až konce. Počítá s rychlostí z poslední práce.`"
+                <Tooltip :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat až do konce. Počítá s rychlostí z poslední práce.`"
                     :sirka="350" :vzdalenost="-78">
                     <span>~ {{ odhadovanaDelkaTextu }} znaků</span>
                 </Tooltip>

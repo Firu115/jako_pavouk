@@ -17,7 +17,7 @@ type Prace = { id: number, text: string, cas: number, datum: Date, prumerneCPM: 
 const trida = ref({} as { id: number, jmeno: string, ucitelID: number, kod: string, zamknuta: boolean, klavesnice: string })
 const prace = ref([] as Prace[])
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
-const vsechnyTridy = ref([] as { id: string, jmeno: string, kod: string, zamknuta: boolean, pocet_studentu: number, pocet_praci: number }[])
+const vsechnyTridy = ref([] as { id: number, jmeno: string, kod: string, zamknuta: boolean, pocet_studentu: number, klavesnice: string, pocet_praci: number }[])
 
 const tab = ref("zaci") // zaci, prace, zadani, nastaveni
 
@@ -36,6 +36,8 @@ const nacitamStudenta = ref(false)
 const router = useRouter()
 
 const smazatPraciID = ref(0)
+const copyPraciIndex = ref(-1)
+const copyTrida = ref(0)
 
 const nastaveni = ref()
 
@@ -61,7 +63,13 @@ function get() {
         }
         prace.value.sort((a: { datum: Date; }, b: { datum: Date; }) => b.datum.getTime() - a.datum.getTime())
 
-        vsechnyTridy.value = response.data.ostatniTridy.sort((a: { jmeno: string; }, b: { jmeno: string; }) => a.jmeno.localeCompare(b.jmeno))
+        vsechnyTridy.value = []
+        for (let i = 0; i < response.data.ostatniTridy.length; i++) {
+            const trida = response.data.ostatniTridy[i]
+            vsechnyTridy.value.push({ id: trida.id, jmeno: trida.jmeno, kod: trida.kod, zamknuta: trida.zamknuta, pocet_studentu: trida.pocet_studentu, klavesnice: trida.klavesnice, pocet_praci: trida.pocet_praci })
+        }
+        vsechnyTridy.value.sort((a: { jmeno: string; }, b: { jmeno: string; }) => a.jmeno.localeCompare(b.jmeno))
+
         studentTridaZmena.value = trida.value.id
 
         useHead({
@@ -212,6 +220,28 @@ function smazatPraci(prace: Prace) {
     })
 }
 
+function zadatDoJineTridy() {
+    if (copyTrida.value == trida.value.id) {
+        if (!confirm("Chcete práci zadat znovu do této třídy? Budou tak dvě práce se stejným textem.")) return
+    }
+
+    axios.post("/skola/pridat-praci", {
+        "cas": prace.value[copyPraciIndex.value].cas,
+        "trida_id": copyTrida.value,
+        "text": prace.value[copyPraciIndex.value].text
+    }, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).then(() => {
+        if (copyTrida.value == trida.value.id) get()
+        copyPraciIndex.value = -1
+    }).catch(e => {
+        console.log(e)
+        pridatOznameni("Chyba serveru")
+    })
+}
+
 </script>
 <template>
     <h1 class="nadpis-se-sipkou" style="margin: 0; direction: ltr;">
@@ -318,12 +348,18 @@ function smazatPraci(prace: Prace) {
             <h2 v-else>Vyberte studenta!</h2>
         </div>
     </div>
-    <div v-else-if="tab == 'prace'" id="pulic-praci">
-        <div id="prace-smazat-kontejner">
-            <div v-for="v in prace" :key="v.id">
-                <img v-if="smazatPraciID == 0" src="../../assets/icony/trash.svg" alt="Smazat práci" @click="smazatPraciID = v.id">
-                <img v-else :style="{ visibility: smazatPraciID == v.id ? 'visible' : 'hidden' }" style="padding: 6px; width: 40px;"
-                    src="../../assets/icony/right.svg" alt="Smazat práci" @click="smazatPraci(v)" @mouseleave="smazatPraciID = 0">
+    <div v-else-if="tab == 'prace' && copyPraciIndex == -1" id="pulic-praci">
+        <div id="prace-uprava-kontejner">
+            <div v-for="v, i in prace" :key="v.id" class="uprava-pill" :style="{ opacity: (smazatPraciID == v.id || smazatPraciID == 0) ? 1 : 0.4 }">
+                <div class="copy-btn" @click="copyPraciIndex = i">
+                    <img src="../../assets/icony/copy.svg" alt="Kopírovat práci">
+                </div>
+                <div v-if="smazatPraciID != v.id" class="smazat-btn" @click="smazatPraciID = v.id">
+                    <img src="../../assets/icony/trash.svg" alt="Smazat práci">
+                </div>
+                <div v-else class="smazat-btn" @click="smazatPraci(v)" @mouseleave="smazatPraciID = 0">
+                    <img src="../../assets/icony/right.svg" alt="Smazat práci">
+                </div>
             </div>
         </div>
         <div id="prace-kontejner">
@@ -350,11 +386,20 @@ function smazatPraci(prace: Prace) {
             <span v-if="prace.length == 0" id="text-zaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
         </div>
     </div>
-
+    <div v-else-if="tab == 'prace' && copyPraciIndex != -1" id="copy-menu">
+        <select v-model="copyTrida">
+            <option :value="0">Vyberte třídu</option>
+            <option v-for="t in vsechnyTridy" :value="t.id" :key="t.id">{{ t.jmeno }}</option>
+        </select>
+        <div>
+            <button class="tlacitko" @click="copyPraciIndex = -1">Zrušit</button>
+            <button class="tlacitko" :disabled="copyTrida == 0" @click="zadatDoJineTridy">Zadat práci</button>
+        </div>
+    </div>
 
     <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="prace[0].prumerneCPM" />
     <NastaveniTridy v-else-if="tab == 'nastaveni'" ref="nastaveni" :trida="trida"
-        :pocetStudentu="vsechnyTridy.find(t => t.id === String(trida.id))!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" @refresh="get" />
+        :pocetStudentu="vsechnyTridy.find(t => t.id === trida.id)!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" @refresh="get" />
 
     <div v-if="tab == 'prace' || tab == 'zadani'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')"
         :style="{ transform: tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">
@@ -363,34 +408,73 @@ function smazatPraci(prace: Prace) {
 
 </template>
 <style scoped>
-#prace-smazat-kontejner {
+.uprava-pill {
+    height: 60px;
+    width: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: 0.2s;
+}
+
+.smazat-btn,
+.copy-btn {
+    width: 100%;
+    padding: 5px;
+    height: 28px;
+    cursor: pointer;
+    border-radius: 6px;
+    background-color: var(--tmave-fialova);
+    transition: 0.15s;
+}
+
+.smazat-btn:hover,
+.copy-btn:hover {
+    background-color: var(--fialova);
+}
+
+.copy-btn>img,
+.smazat-btn>img {
+    position: relative;
+}
+
+#copy-menu {
+    background-color: var(--tmave-fialova);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#copy-menu>select {
+    min-width: 230px;
+}
+
+#copy-menu>div {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+#copy-menu .tlacitko {
+    margin: 0;
+    height: 34px;
+}
+
+
+#prace-uprava-kontejner {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-#prace-smazat-kontejner>div {
-    padding: 10px 0px 10px 10px;
-    display: flex;
-}
-
-#prace-smazat-kontejner>div>img {
-    height: 40px;
-    cursor: pointer;
-    transition: 0.15s;
-    padding: 10px;
-}
-
-#prace-smazat-kontejner>div>img:hover {
-    height: 40px;
-    padding: 7px;
-}
-
 #pulic-praci {
     display: flex;
     justify-content: space-between;
-    width: 80%;
-    margin-right: 50px;
+    width: 550px;
+    gap: 8px;
 }
 
 .udaj2 {
@@ -510,7 +594,7 @@ form input::placeholder {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    width: 90%;
+    width: 100%;
 }
 
 .prace {
@@ -522,6 +606,7 @@ form input::placeholder {
     justify-content: space-between;
     align-items: center;
     max-width: 100%;
+    height: 60px;
 }
 
 .nadpis-prace {

@@ -269,4 +269,10 @@ h2 {
     font-weight: 200;
     margin: 0;
 }
+
+@media screen and (max-width: 1100px) {
+    h1 {
+        direction: ltr;
+    }
+}
 </style>

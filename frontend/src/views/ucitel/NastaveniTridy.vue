@@ -120,8 +120,10 @@ const tridaJmeno = computed(() => {
 
             <span>Podle jména se třídy řadí do ročníků v seznamu tříd.</span>
             <span>
-                Skupina je určena pro rozdělení třídy na skupiny žáků. Např.: <b>3.B&nbsp;￨&nbsp;1</b> a <b>3.B&nbsp;￨&nbsp;2</b> To se může hodit,
-                pokud vyučujete třídy po skupinkách.
+                Skupina je určena pro rozdělení třídy. To se může hodit,
+                pokud vyučujete třídy po menších skupinkách.
+                <br>
+                Např.: <b>3.B&nbsp;￨&nbsp;1</b> a <b>3.B&nbsp;￨&nbsp;2</b>.
             </span>
         </form>
 
@@ -141,7 +143,7 @@ const tridaJmeno = computed(() => {
                 totiž
                 množina již naučených písmen liší klávesami Z a Y.
             </span>
-            <span>Žákům, kteří mají jinou klácesnici než jaká je nastavena v jejich třídě, se u třídy zobrazí varování.</span>
+            <span>Žákům, kteří mají jinou klácesnici než jaká je nastavena v jejich třídě, se zobrazí varování.</span>
         </form>
 
         <form>
@@ -174,7 +176,7 @@ const tridaJmeno = computed(() => {
 #uprava-tridy>form {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 450px;
     align-items: center;
     gap: 8px;
     background-color: var(--tmave-fialova);
@@ -231,5 +233,11 @@ select:hover {
 select option {
     background-color: var(--fialova) !important;
     font-weight: 400;
+}
+
+@media screen and (max-width: 1100px) {
+    #uprava-tridy>form {
+        width: 350px;
+    }
 }
 </style>

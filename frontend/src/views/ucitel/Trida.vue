@@ -9,6 +9,7 @@ import { useHead } from "@unhead/vue";
 import Tooltip from "../../components/Tooltip.vue";
 import NastaveniTridy from "./NastaveniTridy.vue";
 import KodTridy from "../../components/KodTridy.vue";
+import { mobil } from "../../stores";
 
 const id = useRoute().params.id
 
@@ -87,6 +88,7 @@ function get() {
 }
 
 function select(id: number) {
+    if (mobil.value) return
     if (selectnutej.value == id) { //unselect
         selectnutej.value = -1
         return
@@ -277,7 +279,7 @@ function zadatDoJineTridy() {
                 Sdělte jim tento kód, aby se mohli připojit.
             </div>
         </div>
-        <div v-if="selectnutej != -1" class="detail">
+        <div v-if="selectnutej != -1 && !mobil" class="detail">
             <div id="vrsek">
                 <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk" width="200" height="126">
                 <div v-if="!upravaStudenta">
@@ -342,7 +344,7 @@ function zadatDoJineTridy() {
                 </div>
             </div>
         </div>
-        <div v-else class="detail" id="pred-kliknutim">
+        <div v-else-if="!mobil" class="detail" id="pred-kliknutim">
             <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
             <h2 v-if="studenti.length == 0" style="font-size: 1.1rem;">Tady budou statistiky studentů!</h2>
             <h2 v-else>Vyberte studenta!</h2>
@@ -908,5 +910,68 @@ input[id="r3"]:checked~span {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--svetle-fialova);
     cursor: ns-resize;
+}
+
+@media screen and (max-width: 900px) {
+    #pulic {
+        width: 400px;
+    }
+
+    #kontejner {
+        height: auto;
+        overflow-y: visible;
+        padding-right: 0;
+    }
+
+    .nadpis-prace h2 {
+        font-size: 1.1rem;
+    }
+
+    .nadpis-prace h3 {
+        font-size: 0.9rem;
+    }
+
+    .prace {
+        height: 48px;
+        width: 400px;
+        padding: 8px;
+    }
+
+    .statistika * {
+        font-size: 1.3rem !important;
+        height: 22px !important;
+    }
+
+    .statistika span {
+        min-width: 90px;
+    }
+
+    .udaj2 {
+        min-width: 60px !important;
+    }
+
+    .uprava-pill {
+        display: none;
+    }
+
+    #prace-kontejner {
+        width: auto;
+    }
+
+    #pulic-praci {
+        width: auto;
+        gap: 0;
+    }
+
+    .blok {
+        padding: 4px 8px;
+        height: 48px;
+    }
+
+    .blok h3 {
+        height: 18px;
+        position: relative;
+        bottom: 2px;
+    }
 }
 </style>

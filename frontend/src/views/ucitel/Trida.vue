@@ -937,7 +937,7 @@ input[id="r3"]:checked~span {
         padding: 8px;
     }
 
-    .statistika * {
+    .statistika *:not(#tooltip) {
         font-size: 1.3rem !important;
         height: 22px !important;
     }

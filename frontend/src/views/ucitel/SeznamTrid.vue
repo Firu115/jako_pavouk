@@ -181,7 +181,7 @@ function vytvorit(e: Event) {
     display: flex;
     flex-direction: column;
     gap: 25px;
-    width: 90%;
+    width: 640px;
 }
 
 .rocnik {
@@ -233,8 +233,7 @@ function vytvorit(e: Event) {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
-    justify-content: space-between;
-    row-gap: 20px;
+    gap: 20px;
 }
 
 @media screen and (max-width: 1100px) {

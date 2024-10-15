@@ -166,22 +166,26 @@ const tridaJmeno = computed(() => {
 }
 
 #uprava-tridy {
-    width: 60%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 10px;
+}
+
+#uprava-tridy *:first-child {
+    align-self: center !important;
 }
 
 #uprava-tridy>form {
     display: flex;
     flex-direction: column;
-    width: 450px;
+    max-width: 450px;
     align-items: center;
     gap: 8px;
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 15px 25px;
+    margin: 0 5vw;
 }
 
 #uprava-tridy>form>div {
@@ -195,8 +199,9 @@ const tridaJmeno = computed(() => {
 #uprava-tridy .tlacitko,
 #uprava-tridy .cervene-tlacitko {
     margin: 0;
-    height: 34px;
-    padding: 0 25px;
+    height: auto;
+    min-height: 34px;
+    padding: 5px 25px;
     width: auto;
 }
 
@@ -235,8 +240,5 @@ select option {
 }
 
 @media screen and (max-width: 1100px) {
-    #uprava-tridy>form {
-        width: 350px;
-    }
 }
 </style>

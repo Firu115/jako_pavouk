@@ -486,7 +486,6 @@ const posledniRychlostPrace = computed(() => {
     height: 34px;
 }
 
-
 #prace-uprava-kontejner {
     display: flex;
     flex-direction: column;
@@ -639,13 +638,13 @@ form input::placeholder {
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    position: absolute;
+    position: fixed;
     bottom: 30px;
     right: 120px;
 }
 
 #text-prace>img {
-    margin-left: 230px
+    margin-left: 230px;
 }
 
 #prace-kontejner {
@@ -727,10 +726,11 @@ form input::placeholder {
     cursor: pointer;
     color: #c5c5c5;
     transition: 0.15s;
+    font-weight: 400;
 }
 
 #prepinac-tabu input:checked+label {
-    font-weight: 400;
+    font-weight: 500;
     color: var(--bila);
 }
 
@@ -1028,6 +1028,16 @@ input[id="r3"]:checked~span {
         height: 18px;
         position: relative;
         bottom: 2px;
+    }
+
+    #text-prace {
+        bottom: 40px;
+        right: 20px;
+    }
+
+    #text-prace>img {
+        margin-left: 20px;
+        transform: rotate(8deg);
     }
 }
 </style>

@@ -137,12 +137,17 @@ function vytvorit(e: Event) {
     <div v-else-if="rocniky.size === 0 && nacitam">
         Načítám...
     </div>
-    <div v-else style="background-color: var(--tmave-fialova); padding: 20px; border-radius: 10px; max-width: 450px;">
-        <b style="font-size: 1.3rem;">Vítejte v rozhraní pro učitele!</b>
-        <br><br>
-        Zatím tu nejsou žádné třídy, a tak svou první můžete vytvořit pomocí tlačítka dole.
+    <div v-else style="background-color: var(--tmave-fialova); padding: 20px; border-radius: 10px; max-width: 450px; margin: 0 5vw;">
+        <h2 style="font-size: 1.3rem;">Vítejte v rozhraní pro učitele!</h2>
         <br>
-        Žáci se do ní mohou připojit pomocí 4místného kódu, který bude automaticky vytvořen.
+        Zde se vám budou třídy řadit do ročníků.
+        <br>
+        Žáci se do nich mohou připojit pomocí 4místného kódu, který bude pro každou třídu automaticky vytvořen.
+    </div>
+
+    <div v-if="rocniky.size == 0 && !pridavani" id="text-prace">
+        <span>Zatím tu nejsou žádné třídy. <br>První vytvoříte pomocí tohoto tlačítka.</span>
+        <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
     </div>
 
     <div id="pridat" @click="pridavani = !pridavani" :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">
@@ -158,12 +163,13 @@ function vytvorit(e: Event) {
 form {
     display: flex;
     flex-direction: column;
-    width: 450px;
+    max-width: 450px;
     align-items: center;
     gap: 8px;
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 15px 25px;
+    margin: 0 5vw;
 }
 
 form>h2 {
@@ -272,6 +278,20 @@ form span:last-of-type {
     gap: 20px;
 }
 
+#text-prace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    position: fixed;
+    bottom: 30px;
+    right: 120px;
+}
+
+#text-prace>img {
+    margin-left: 230px;
+}
+
 @media screen and (max-width: 1100px) {
     #rocniky {
         width: 420px;
@@ -281,6 +301,16 @@ form span:last-of-type {
 @media screen and (max-width: 600px) {
     #rocniky {
         width: 200px;
+    }
+
+    #text-prace {
+        bottom: 40px;
+        right: 20px;
+    }
+
+    #text-prace>img {
+        margin-left: 20px;
+        transform: rotate(8deg);
     }
 }
 </style>

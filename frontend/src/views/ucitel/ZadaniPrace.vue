@@ -163,7 +163,7 @@ const odhadovanaDelkaTextu = computed(() => {
 
 </script>
 <template>
-    <div id="pulic">
+    <div id="pulic-zadani">
         <div id="nastaveni">
             <h2>Nastavení</h2>
 
@@ -230,9 +230,9 @@ const odhadovanaDelkaTextu = computed(() => {
 
             <div>
                 <span>{{ getZnakyASlova() }}</span>
-                <Tooltip :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat až do konce. Počítá s rychlostí z poslední práce.`"
+                <Tooltip v-show="odhadovanaDelkaTextu != -1" :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat až do konce. Počítá s rychlostí z poslední práce.`"
                     :sirka="350" :vzdalenost="-78">
-                    <span v-show="odhadovanaDelkaTextu != -1">~ {{ odhadovanaDelkaTextu }} znaků</span>
+                    <span>~ {{ odhadovanaDelkaTextu }} znaků</span>
                 </Tooltip>
             </div>
         </div>
@@ -302,12 +302,13 @@ select option:disabled {
     opacity: 1;
 }
 
-#pulic {
+#pulic-zadani {
     display: flex;
-    justify-content: space-between;
-    gap: 40px;
+    justify-content: center;
+    gap: 15px;
     width: 860px;
     margin-top: 20px;
+    margin-bottom: -50px;
 }
 
 #text {

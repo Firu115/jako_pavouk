@@ -145,7 +145,7 @@ function vytvorit(e: Event) {
         Žáci se do nich mohou připojit pomocí 4místného kódu, který bude pro každou třídu automaticky vytvořen.
     </div>
 
-    <div v-if="rocniky.size == 0 && !pridavani" id="text-prace">
+    <div v-if="rocniky.size == 0 && !pridavani && !nacitam" id="text-prace">
         <span>Zatím tu nejsou žádné třídy. <br>První vytvoříte pomocí tohoto tlačítka.</span>
         <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
     </div>

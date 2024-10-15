@@ -100,24 +100,38 @@ function vytvorit(e: Event) {
         </div>
     </div>
     <div v-else-if="pridavani">
-        <form id="pridat-formular">
-            <h2 style="margin-bottom: 15px;">Vytvořit třídu</h2>
-
+        <form>
+            <h2>Vytvořit třídu</h2>
             <div>
                 <h3>Ročník:</h3>
-                <select v-model="rocnik" style="margin-right: 10px;">
-                    <option v-for="v in moznostiRocnik" :key="v" :value="v">{{ v }}</option>
-                </select>
-                <h3>Třída:</h3>
-                <select v-model="trida" style="margin-right: 10px;">
-                    <option v-for="v in moznostiTrida" :key="v" :value="v">{{ v }}</option>
-                </select>
-                <h3>Skupina:</h3>
-                <select v-model="skupina">
-                    <option v-for="v in moznostiSkupina" :key="v" :value="v">{{ v }}</option>
+                <select v-model="rocnik">
+                    <option v-for="v in moznostiRocnik" :value="v" :key="v">{{ v }}</option>
                 </select>
             </div>
+
+            <div>
+                <h3>Písmeno:</h3>
+                <select v-model="trida">
+                    <option v-for="v in moznostiTrida" :value="v" :key="v">{{ v }}</option>
+                </select>
+            </div>
+
+            <div>
+                <h3>Skupina:</h3>
+                <select v-model="skupina">
+                    <option v-for="v in moznostiSkupina" :value="v" :key="v">{{ v }}</option>
+                </select>
+            </div>
+
             <button class="tlacitko" @click="vytvorit">Vytvořit</button>
+
+            <span>Podle jména se třídy řadí do ročníků v seznamu tříd.</span>
+            <span>
+                Skupina je určena pro rozdělení třídy. To se může hodit,
+                pokud vyučujete třídy po menších skupinkách.
+                <br>
+                Např.: <b>3.B&nbsp;￨&nbsp;1</b> a <b>3.B&nbsp;￨&nbsp;2</b>.
+            </span>
         </form>
     </div>
     <div v-else-if="rocniky.size === 0 && nacitam">
@@ -128,7 +142,7 @@ function vytvorit(e: Event) {
         <br><br>
         Zatím tu nejsou žádné třídy, a tak svou první můžete vytvořit pomocí tlačítka dole.
         <br>
-        Žáci se do ní mohou připojit pomocí 6ti-místného kódu, který bude automaticky vytvořen.
+        Žáci se do ní mohou připojit pomocí 4místného kódu, který bude automaticky vytvořen.
     </div>
 
     <div id="pridat" @click="pridavani = !pridavani" :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">
@@ -141,19 +155,41 @@ function vytvorit(e: Event) {
     align-self: center;
 }
 
-#pridat-formular {
-    background-color: var(--tmave-fialova);
-    border-radius: 10px;
-    padding: 20px 30px;
+form {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    width: 450px;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--tmave-fialova);
+    border-radius: 10px;
+    padding: 15px 25px;
 }
 
-#pridat-formular div {
+form>h2 {
+    margin-bottom: 15px;
+}
+
+form>div {
     display: flex;
+    width: 100%;
     align-items: center;
-    gap: 5px;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+form>span {
+    opacity: 0.5;
+    font-size: 0.85rem;
+    margin-bottom: -4px;
+}
+
+form span:first-of-type {
+    margin-top: 8px;
+}
+
+form span:last-of-type {
+    margin-bottom: 0;
 }
 
 #pridat {

@@ -3,7 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, pridatOznameni } from "../../utils";
 import axios from "axios";
-import { role } from "../../stores";
+import { prihlasen, role } from "../../stores";
 
 const router = useRouter()
 
@@ -25,7 +25,7 @@ function potvrditKod(e: Event) {
         pridatOznameni("Nejsi přihlášen/a!")
         return
     }
-    if (!/^[a-zA-Z0-9]{6}$/.test(kod.value)) {
+    if (!/^[a-zA-Z]{4}$/.test(kod.value)) {
         pridatOznameni("Kód je neplatný")
         return
     }
@@ -83,6 +83,10 @@ function zapsatSe(e: Event) {
     })
 }
 
+function checkPrihlaseni() {
+    if (!prihlasen.value) pridatOznameni("Nejsi přihlášen/a!")
+}
+
 </script>
 <template>
     <h1>Zápis do třídy</h1>
@@ -90,7 +94,7 @@ function zapsatSe(e: Event) {
         <img src="../../assets/pavoukSkola.svg" alt="Pavouk před školou">
         <form v-if="state == 'kod'">
             <h2>Zadej kód:</h2>
-            <input type="text" v-model="kod" placeholder="ABC123">
+            <input type="text" v-model="kod" placeholder="ABCD" @focus="checkPrihlaseni">
             <button class="tlacitko" @click="potvrditKod">Potvrdit</button>
         </form>
         <form v-else>
@@ -152,6 +156,7 @@ input {
     font-size: 1.9em;
     transition: all 0.15s cubic-bezier(0.5, 0, 0.5, 1) 0s;
     margin: 5px;
+    text-align: center;
 }
 
 #jmeno {

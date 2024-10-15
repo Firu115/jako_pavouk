@@ -49,7 +49,7 @@ function getText() {
         "typ": typTextu.value,
         "z_lekce": lekceTextu.value.pismena,
         "trida_id": props.tridaID,
-        "delka": odhadovanaDelkaTextu.value
+        "delka": odhadovanaDelkaTextu.value == -1 ? 239 : odhadovanaDelkaTextu.value
     }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
@@ -157,6 +157,7 @@ function upravaSelectuLekci() {
 }
 
 const odhadovanaDelkaTextu = computed(() => {
+    if (props.posledniRychlost == -1) return -1
     return Math.ceil((props.posledniRychlost! + 10) * (delka.value / 60))
 })
 
@@ -231,7 +232,7 @@ const odhadovanaDelkaTextu = computed(() => {
                 <span>{{ getZnakyASlova() }}</span>
                 <Tooltip :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat až do konce. Počítá s rychlostí z poslední práce.`"
                     :sirka="350" :vzdalenost="-78">
-                    <span>~ {{ odhadovanaDelkaTextu }} znaků</span>
+                    <span v-show="odhadovanaDelkaTextu != -1">~ {{ odhadovanaDelkaTextu }} znaků</span>
                 </Tooltip>
             </div>
         </div>

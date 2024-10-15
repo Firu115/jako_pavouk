@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
@@ -244,6 +244,15 @@ function zadatDoJineTridy() {
     })
 }
 
+const posledniRychlostPrace = computed(() => {
+    if (prace.value.length == 0) return -1
+
+    for (let i = 0; i < prace.value.length; i++) {
+        if (prace.value[i].prumerneCPM != -1) return prace.value[i].prumerneCPM
+    }
+    return -1
+})
+
 </script>
 <template>
     <h1 class="nadpis-se-sipkou" style="margin: 0; direction: ltr;">
@@ -274,9 +283,18 @@ function zadatDoJineTridy() {
                 <span><b>{{ naJednoDesetiny(st.cpm) }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
             </div>
             <div v-if="studenti.length == 0 && trida.jmeno" id="text-zaci">
-                Tady uvidíte všechny žáky... <br>
                 <KodTridy :id="trida.id" :kod="trida.kod" :zamknuta="trida.zamknuta" />
-                Sdělte jim tento kód, aby se mohli připojit.
+                <h3>Jak se mohou žáci připojit?</h3>
+                <ol>
+                    <li>Sdělte žákům tento 4-místný kód</li>
+                    <li>Žáci se zapíšou:
+                        <ul>
+                            <li>V záložce "Domů"</li>
+                            <li>Uplně dole</li>
+                            <li>Tlačítkem "Zapsat se"</li>
+                        </ul>
+                    </li>
+                </ol>
             </div>
         </div>
         <div v-if="selectnutej != -1 && !mobil" class="detail">
@@ -385,7 +403,10 @@ function zadatDoJineTridy() {
                     </Tooltip>
                 </div>
             </div>
-            <span v-if="prace.length == 0" id="text-zaci">Zatím tu nejsou žádné zadané práce. <br>První vytvoříte pomocí tlačítka dole.</span>
+            <div v-if="prace.length == 0" id="text-prace">
+                <span>Zatím nejsou žádné zadané práce. <br>První vytvoříte pomocí tohoto tlačítka.</span>
+                <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
+            </div>
         </div>
     </div>
     <div v-else-if="tab == 'prace' && copyPraciIndex != -1" id="copy-menu">
@@ -399,7 +420,7 @@ function zadatDoJineTridy() {
         </div>
     </div>
 
-    <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="prace[0].prumerneCPM" />
+    <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="posledniRychlostPrace" />
     <NastaveniTridy v-else-if="tab == 'nastaveni'" ref="nastaveni" :trida="trida"
         :pocetStudentu="vsechnyTridy.find(t => t.id === trida.id)!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" @refresh="get" />
 
@@ -587,9 +608,44 @@ form input::placeholder {
     height: 380px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
     align-items: center;
     justify-content: center;
+}
+
+#text-zaci>ol {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#text-zaci ul {
+    margin-left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 3px;
+}
+
+#text-zaci>h3 {
+    margin-top: 25px;
+    margin-bottom: 4px;
+    font-size: 1.3rem;
+}
+
+#text-prace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    position: absolute;
+    bottom: 30px;
+    right: 120px;
+}
+
+#text-prace>img {
+    margin-left: 230px
 }
 
 #prace-kontejner {

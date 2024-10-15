@@ -40,9 +40,9 @@ function smazatTridu(e: Event) {
 
     if (props.pocetStudentu != 0) {
         let zprava: string = ""
-        if (props.pocetStudentu == 1) zprava = "1 student se už připojil do této třídy."
-        else if (props.pocetStudentu <= 4) zprava = `${props.pocetStudentu} studenti se už připojili do této třídy.`
-        else zprava = `${props.pocetStudentu} studentů se už připojilo do této třídy.`
+        if (props.pocetStudentu == 1) zprava = "1 student už je v této třídě."
+        else if (props.pocetStudentu <= 4) zprava = `${props.pocetStudentu} studenti už jsou v této třídě.`
+        else zprava = `${props.pocetStudentu} studentů už je v této třídě.`
         if (!confirm(zprava + " Opravdu ji chcete smazat?")) return
     }
 
@@ -213,7 +213,6 @@ form span:first-of-type {
 form span:last-of-type {
     margin-bottom: 0;
 }
-
 
 /* firefox nenenene */
 @supports(-webkit-tap-highlight-color: black) {

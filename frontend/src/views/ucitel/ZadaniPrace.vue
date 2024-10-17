@@ -268,7 +268,7 @@ select {
     height: 40px;
     border: none;
     border-radius: 5px;
-    font-size: 1rem;
+    font-size: 16px;
     color: white;
     background-color: var(--tmave-fialova);
     cursor: pointer;
@@ -396,7 +396,7 @@ select option:disabled {
     background-color: transparent;
     border: none;
     color: rgba(240, 240, 240, 0.7);
-    font-size: 1rem;
+    font-size: 16px;
     cursor: pointer;
     font-weight: 400;
     transition: 0.1s;

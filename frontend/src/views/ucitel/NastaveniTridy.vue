@@ -207,7 +207,7 @@ const tridaJmeno = computed(() => {
 
 form>span {
     opacity: 0.5;
-    font-size: 0.85rem;
+    font-size: 14px;
     margin-bottom: -4px;
 }
 

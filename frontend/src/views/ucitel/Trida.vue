@@ -500,17 +500,17 @@ const posledniRychlostPrace = computed(() => {
 }
 
 .udaj2 {
-    font-size: 1.6rem !important;
+    font-size: 26px !important;
     min-width: 95px !important;
 }
 
 .statistika span b {
     font-family: "Red Hat Mono";
-    font-size: 1.8rem;
+    font-size: 29px;
 }
 
 .statistika span {
-    font-size: 1.2rem;
+    font-size: 19px;
     display: flex;
     align-items: baseline;
     gap: 5px;
@@ -534,11 +534,11 @@ const posledniRychlostPrace = computed(() => {
 
 .udaje>div {
     font-weight: 500;
-    font-size: 1.2rem;
+    font-size: 19px;
 }
 
 .udaje>div>span {
-    font-size: 0.8rem;
+    font-size: 13px;
 }
 
 hr {
@@ -569,17 +569,17 @@ form input::placeholder {
 }
 
 #posledni-prace>div>span {
-    font-size: 0.9rem;
+    font-size: 14px;
 }
 
 #posledni-prace>div>div:not(.udaje) {
     margin-top: 20px;
-    font-size: 1.5rem;
+    font-size: 24px;
 }
 
 #posledni-prace>div>h4 {
     font-weight: 500;
-    font-size: 1.2rem;
+    font-size: 19px;
 }
 
 .udaj {
@@ -591,16 +591,16 @@ form input::placeholder {
 }
 
 .udaj>h4 {
-    font-size: 1.1rem;
+    font-size: 18px;
 }
 
 .udaj>div {
-    font-size: 1.5rem;
+    font-size: 24px;
     font-weight: 500;
 }
 
 .udaj>div>span {
-    font-size: 1.1rem;
+    font-size: 18px;
 }
 
 #text-zaci {
@@ -630,7 +630,7 @@ form input::placeholder {
 #text-zaci>h3 {
     margin-top: 25px;
     margin-bottom: 4px;
-    font-size: 1.3rem;
+    font-size: 21px;
 }
 
 #text-prace {
@@ -673,12 +673,12 @@ form input::placeholder {
 }
 
 .nadpis-prace h2 {
-    font-size: 1.4rem;
+    font-size: 22px;
     font-weight: 500;
 }
 
 .nadpis-prace h3 {
-    font-size: 1.1rem;
+    font-size: 18px;
     font-weight: 200;
     margin: 0;
 }
@@ -813,7 +813,7 @@ input[id="r3"]:checked~span {
 }
 
 .detail h3 {
-    font-size: 1rem;
+    font-size: 16px;
     text-align: start;
 }
 
@@ -859,7 +859,7 @@ input[id="r3"]:checked~span {
 
 #vrsek select {
     height: 30px;
-    font-size: 1rem;
+    font-size: 16px;
 }
 
 #vrsek div {
@@ -876,7 +876,7 @@ input[id="r3"]:checked~span {
 }
 
 #ulozit {
-    font-size: 0.9rem;
+    font-size: 14px;
     margin-top: 0;
     width: 80px;
     height: 30px;
@@ -892,7 +892,7 @@ input[id="r3"]:checked~span {
     color: var(--bila);
     padding: 10px;
     font-weight: normal;
-    font-size: 1em;
+    font-size: 16px;
 }
 
 #vrsek input:focus {
@@ -916,7 +916,7 @@ input[id="r3"]:checked~span {
 }
 
 .blok h4 {
-    font-size: 0.9rem;
+    font-size: 14px;
     text-overflow: ellipsis;
     overflow: hidden;
     text-wrap: nowrap;
@@ -932,7 +932,7 @@ input[id="r3"]:checked~span {
 }
 
 .blok span {
-    font-size: 1.3rem;
+    font-size: 21px;
 }
 
 .blok div {
@@ -980,11 +980,11 @@ input[id="r3"]:checked~span {
     }
 
     .nadpis-prace h2 {
-        font-size: 1.1rem;
+        font-size: 18px;
     }
 
     .nadpis-prace h3 {
-        font-size: 0.9rem;
+        font-size: 14px;
     }
 
     .prace {
@@ -994,7 +994,7 @@ input[id="r3"]:checked~span {
     }
 
     .statistika *:not(#tooltip) {
-        font-size: 1.3rem !important;
+        font-size: 21px !important;
         height: 22px !important;
     }
 

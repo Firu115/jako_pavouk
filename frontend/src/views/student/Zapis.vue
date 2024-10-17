@@ -114,7 +114,7 @@ function checkPrihlaseni() {
 
 h2 {
     padding-left: 5px;
-    font-size: 1.3em;
+    font-size: 21px;
 }
 
 #kontejner {
@@ -140,7 +140,7 @@ form {
 
 form p {
     padding-left: 5px;
-    font-size: 0.9rem;
+    font-size: 14px;
     margin-bottom: 8px;
 }
 
@@ -153,7 +153,7 @@ input {
     color: var(--bila);
     padding: 10px;
     font-weight: normal;
-    font-size: 1.9em;
+    font-size: 30px;
     transition: all 0.15s cubic-bezier(0.5, 0, 0.5, 1) 0s;
     margin: 5px;
     text-align: center;
@@ -161,7 +161,7 @@ input {
 
 #jmeno {
     height: 40px;
-    font-size: 1em;
+    font-size: 16px;
 }
 
 input:focus {

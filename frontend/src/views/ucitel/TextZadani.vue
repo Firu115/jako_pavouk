@@ -48,7 +48,7 @@ div {
     z-index: 1;
     background-color: var(--tmave-fialova);
     border-radius: 5px;
-    font-size: 1rem !important;
+    font-size: 16px !important;
     overflow-y: auto;
     text-decoration: none;
 
@@ -57,7 +57,7 @@ div {
 
     white-space: pre-wrap;
     word-wrap: break-word;
-    line-height: 1.2rem;
+    line-height: 19px;
 }
 
 textarea {
@@ -65,13 +65,13 @@ textarea {
     border: 0;
     height: 100%;
     width: 100%;
-    font-size: 1rem !important;
+    font-size: 16px !important;
     text-decoration: none;
     color: var(--bila);
     padding: 10px;
     resize: none;
     z-index: 2;
-    line-height: 1.2rem;
+    line-height: 19px;
     font-family: "Red Hat Mono", monospace;
 }
 

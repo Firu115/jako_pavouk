@@ -137,7 +137,7 @@ h1 {
 }
 
 h1 span {
-    font-size: 0.9rem;
+    font-size: 14px;
     border-radius: 100px;
     padding: 5px;
     position: relative;
@@ -176,11 +176,11 @@ h1 span.blba {
 
 .statistika span b {
     font-family: "Red Hat Mono";
-    font-size: 1.8rem;
+    font-size: 29px;
 }
 
 .statistika span {
-    font-size: 1.2rem;
+    font-size: 19px;
     display: flex;
     align-items: baseline;
     gap: 5px;
@@ -260,12 +260,12 @@ h2 {
 }
 
 .nadpis-prace h3 {
-    font-size: 1.4rem;
+    font-size: 22px;
     font-weight: 500;
 }
 
 .nadpis-prace h4 {
-    font-size: 1.1rem;
+    font-size: 18px;
     font-weight: 200;
     margin: 0;
 }

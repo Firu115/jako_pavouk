@@ -186,7 +186,7 @@ form>div {
 
 form>span {
     opacity: 0.5;
-    font-size: 0.85rem;
+    font-size: 14px;
     margin-bottom: -4px;
 }
 
@@ -258,7 +258,7 @@ form span:last-of-type {
 
 .blok h3 {
     margin-bottom: 6px;
-    font-size: 1.4rem;
+    font-size: 22px;
     font-weight: 500;
 }
 

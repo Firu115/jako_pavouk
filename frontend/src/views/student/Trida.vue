@@ -3,7 +3,7 @@ import axios from "axios";
 import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import { computed, onMounted, ref } from "vue";
 import { useHead } from "unhead";
-import { mobil } from "../../stores";
+import { mobil, role } from "../../stores";
 import Tooltip from "../../components/Tooltip.vue";
 import { useRouter } from "vue-router";
 
@@ -31,7 +31,7 @@ onMounted(() => {
 
 function get() {
     nacitam.value = true
-    axios.get("/skola/trida/", {
+    axios.get("/skola/trida", {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
@@ -50,12 +50,9 @@ function get() {
         }
     }).catch(e => {
         if (checkTeapot(e)) return
-        if (e.response.data.error == "sql: no rows in result set") {
-            pridatOznameni("Taková třída neexistuje")
-            router.push("/skola")
-            return
-        }
         pridatOznameni("Chyba serveru")
+        router.back()
+        role.value = "basic"
     }).finally(() => {
         nacitam.value = false
     })

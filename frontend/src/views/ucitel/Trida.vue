@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
@@ -42,8 +42,19 @@ const copyTrida = ref(0)
 
 const nastaveni = ref()
 
+let source: EventSource | null = null
+
 onMounted(() => {
     get()
+
+    source = new EventSource("http://127.0.0.1:1323/api/skola/zaci-stream/" + id)
+    source.onmessage = function () {
+        get()
+    }
+})
+
+onUnmounted(() => {
+    source?.close()
 })
 
 function get() {
@@ -136,7 +147,7 @@ function zmenaJmena(e: Event) {
         pridatOznameni("Jméno musí být 1-30 znaků dlouhé")
         return
     }
-    axios.post("/skola/student/", { jmeno: jmenoUprava.value, id: selectnutej.value }, {
+    axios.post("/skola/student", { jmeno: jmenoUprava.value, id: selectnutej.value }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
@@ -161,7 +172,7 @@ function zmenaStudentTridy(e: Event) {
         return
     }
 
-    axios.post("/skola/student/", { trida_id: parseInt(studentTridaZmena.value), id: selectnutej.value }, {
+    axios.post("/skola/student", { trida_id: parseInt(studentTridaZmena.value), id: selectnutej.value }, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }

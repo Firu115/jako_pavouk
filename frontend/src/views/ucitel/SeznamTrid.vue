@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { checkTeapot, getToken, pridatOznameni } from "../../utils";
 import { moznostiRocnik, moznostiTrida, moznostiSkupina, prihlasen } from "../../stores";
 import { useHead } from "@unhead/vue";
@@ -18,6 +18,8 @@ const skupina = ref("-")
 
 const nacitam = ref(true)
 
+const sources: EventSource[] = []
+
 useHead({
     title: "Seznam tříd"
 })
@@ -29,6 +31,12 @@ onMounted(() => {
     get()
 })
 
+onUnmounted(() => {
+    sources.forEach(s => {
+        s.close()
+    })
+})
+
 function get() {
     axios.get("/skola/tridy", {
         headers: {
@@ -38,6 +46,18 @@ function get() {
         Object.keys(response.data.tridy).forEach(key => {
             rocniky.value.set(key, response.data.tridy[key].sort((a: { jmeno: string }, b: { jmeno: string }) => a.jmeno.localeCompare(b.jmeno)))
         })
+
+        if (sources.length == 0) {
+            rocniky.value.forEach(r => {
+                r.forEach(t => {
+                    let s = new EventSource("http://127.0.0.1:1323/api/skola/zaci-stream/" + t.id)
+                    s.onmessage = function () {
+                        get()
+                    }
+                    sources.push(s)
+                })
+            })
+        }
     }).catch(e => {
         if (checkTeapot(e)) return
         if (e.response.status == 401) {

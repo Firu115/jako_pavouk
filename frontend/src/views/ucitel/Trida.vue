@@ -291,7 +291,7 @@ const posledniRychlostPrace = computed(() => {
                     <h3>{{ st.jmeno }}</h3>
                     <h4>{{ st.email }}</h4>
                 </div>
-                <span><b>{{ naJednoDesetiny(st.cpm) }}</b> <span style="font-size: 0.95rem;">CPM</span></span>
+                <span><b>{{ naJednoDesetiny(st.cpm) }}</b> <span style="font-size: 15px;">CPM</span></span>
             </div>
             <div v-if="studenti.length == 0 && trida.jmeno" id="text-zaci">
                 <KodTridy :id="trida.id" :kod="trida.kod" :zamknuta="trida.zamknuta" />
@@ -375,7 +375,7 @@ const posledniRychlostPrace = computed(() => {
         </div>
         <div v-else-if="!mobil" class="detail" id="pred-kliknutim">
             <img src="../../assets/pavoucekBezPozadi.svg" alt="Pavouk">
-            <h2 v-if="studenti.length == 0" style="font-size: 1.1rem;">Tady budou statistiky studentů!</h2>
+            <h2 v-if="studenti.length == 0" style="font-size: 20px;">Tady budou statistiky studentů!</h2>
             <h2 v-else>Vyberte studenta!</h2>
         </div>
     </div>
@@ -512,7 +512,6 @@ const posledniRychlostPrace = computed(() => {
 
 .udaj2 {
     font-size: 26px !important;
-    min-width: 95px !important;
 }
 
 .statistika span b {

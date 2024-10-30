@@ -158,7 +158,7 @@ function vytvorit(e: Event) {
         Načítám...
     </div>
     <div v-else style="background-color: var(--tmave-fialova); padding: 20px; border-radius: 10px; max-width: 450px; margin: 0 5vw;">
-        <h2 style="font-size: 1.3rem;">Vítejte v rozhraní pro učitele!</h2>
+        <h2 style="font-size: 21px;">Vítejte v rozhraní pro učitele!</h2>
         <br>
         Zde se vám budou třídy řadit do ročníků.
         <br>

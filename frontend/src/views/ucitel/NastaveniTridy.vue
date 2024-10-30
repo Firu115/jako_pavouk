@@ -139,7 +139,7 @@ const tridaJmeno = computed(() => {
             </div>
 
             <span>
-                Klávesnice ovlivňuje pouze to, jak se generují texty typu: <b>Naučená písmena &amp; Slova</b>, v lekcích <b>t,z - y,x,m</b>. Tam se
+                Klávesnice ovlivňuje pouze to, jak se generují texty typu: <b>Naučená písmena</b> a <b>Slova</b>, v lekcích <b>t,z - y,x,m</b>. Tam se
                 totiž
                 množina již naučených písmen liší klávesami Z a Y.
             </span>

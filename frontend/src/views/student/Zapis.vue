@@ -173,4 +173,18 @@ input:focus {
 form input::placeholder {
     color: rgba(255, 255, 255, 0.42);
 }
+
+@media screen and (max-width: 1100px) {
+    #kontejner>img {
+        display: none;
+    }
+    #kontejner {
+        padding: 20px 25px;
+        width: auto;
+        margin: 0 30px;
+    }
+    h1 {
+        max-width:60vw;
+    }
+}
 </style>

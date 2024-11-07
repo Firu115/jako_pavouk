@@ -312,6 +312,7 @@ select option:disabled {
 }
 
 #text {
+    position: relative;
     width: 410px;
     display: flex;
     flex-direction: column;

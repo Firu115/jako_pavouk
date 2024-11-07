@@ -1,40 +1,44 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch } from "vue"
 
 const text = ref("")
 
 const textarea = ref<HTMLElement | null>(null)
 const div = ref<HTMLElement>()
+const sus = ref("")
+
+const lineBreak = new RegExp(/(\r\n|\r|\n)/g)
+const red = new RegExp(/([^A-Za-z0-9ěščřžýáíéůúťďňóĚŠČŘŽÝÁÍÉŮÚŤĎŇÓ ,.!?;:_=+\-*/%()[\]{}<>"'@&|\r\n]+)/g)
+const orange = new RegExp(/(([_=+\-*%()[\]{}"'@&|]+)|(?<!\/?mark)([<>])(?!\/?mark))|(\/)(?!mark>)/g)
+const mezeraNaZacatku = new RegExp(/(^ )/g)
+const viceMezer = new RegExp(/( {2,})/g)
+//const htmlEscape = new RegExp(/(&[^ ]{2,5}?;)/g) //TODO nefunguje dobře pokud &&&&&;
 
 function scrollDiv() {
     div.value?.scrollTo(0, textarea.value!.scrollTop)
 }
 
 watch(text, () => {
-    let t = text.value
-        .replace(/[&<>'"]/g,
-            tag =>
-            ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                "'": "&#39;",
-                '"': "&quot;"
-            }[tag] || tag)
-        )
-        .replace(/(\r\n|\r|\n)/g, "↵\n")
-        .replace(/(^ )|( {2,})|(↵\n)|( $)|!(.(\r\n|\r|\n))|([^A-Za-z0-9ěščřžýáíéůúťďňóĚŠČŘŽÝÁÍÉŮÚŤĎŇÓ ,.!?;:_=+\-*/%()[\]{}<>] && (?!&.{2, 4};))/g, `<m style='background-color: rgba(255, 0, 0, 0.4); font-family: "Red Hat Mono", monospace; border-radius: 3px'>$&</m>`)
-    // krejzy https://codersblock.com/blog/highlight-text-inside-a-textarea/
-    div.value!.innerHTML = t
+    let t: string = text.value
+
+    t = text.value.replace(red, `<mark>$&</mark>`)
+    t = t.replace(orange, "<mark2>$&</mark2>")
+    t = t.replace(lineBreak, "<mark>↵\n</mark>")
+    t = t.replace(viceMezer, "<mark>$&</mark>")
+    t = t.replace(mezeraNaZacatku, "<mark>$&</mark>")
+
+    console.log(t, text.value)
+    sus.value = t
 })
 
 defineExpose({ text })
-
+// krejzy https://codersblock.com/blog/highlight-text-inside-a-textarea/
 </script>
 <template>
-    <div ref="div"></div>
+    <div ref="div" v-html="sus"></div>
     <textarea ref="textarea" placeholder="Text který budou žáci psát..." v-model="text" @scroll="scrollDiv" />
 </template>
+
 <style scoped>
 div {
     position: absolute;
@@ -43,7 +47,7 @@ div {
     height: calc(100vh - 60px - 40px - 25px - 30px - 40px - 11px);
     /* celá obrazovka - všechno co je nad tím */
     text-align: start;
-    top: 145px;
+    top: 55px;
     word-wrap: break-word;
     z-index: 1;
     background-color: var(--tmave-fialova);
@@ -57,10 +61,11 @@ div {
 
     white-space: pre-wrap;
     word-wrap: break-word;
-    line-height: 19px;
+    line-height: 21px;
 }
 
 textarea {
+    position: relative;
     background-color: transparent;
     border: 0;
     height: 100%;
@@ -71,7 +76,7 @@ textarea {
     padding: 10px;
     resize: none;
     z-index: 2;
-    line-height: 19px;
+    line-height: 21px;
     font-family: "Red Hat Mono", monospace;
 }
 
@@ -111,5 +116,23 @@ textarea::-webkit-scrollbar-thumb:hover {
 div::-webkit-scrollbar {
     width: 10px;
     background: transparent;
+}
+</style>
+
+<!-- eslint-disable-next-line vue-scoped-css/enforce-style-type -->
+<style>
+div>mark,
+div>mark2 {
+    font-family: "Red Hat Mono", monospace;
+    border-radius: 3px;
+    color: rgb(156, 156, 156) !important;
+}
+
+div>mark {
+    background-color: rgba(255, 0, 0, 0.4);
+}
+
+div>mark2 {
+    background-color: rgba(255, 136, 0, 0.4);
 }
 </style>

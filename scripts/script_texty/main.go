@@ -1,7 +1,6 @@
 package main
 
 import (
-	"backend/utils"
 	"bufio"
 	"database/sql"
 	"encoding/csv"
@@ -13,6 +12,8 @@ import (
 	"sort"
 	"strings"
 	"unicode/utf8"
+
+	"scripts/utils"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -43,14 +44,14 @@ type lekcos struct {
 }
 
 func main() {
-	err := godotenv.Load("../.env")
+	err := godotenv.Load("../../backend/.env")
 	if err != nil {
 		panic("Nenašel jsem soubor .env v /backend.")
 	}
 
 	fmt.Printf("Připojuješ se na %s (.env)\n", os.Getenv("DB_JMENO"))
 
-	connStr := fmt.Sprintf("postgresql://%s:%s@%s/%s?sslmode=disable", os.Getenv("DB_UZIV"), os.Getenv("DB_HESLO"), os.Getenv("DB_HOST"), os.Getenv("DB_JMENO"))
+	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable", os.Getenv("DB_UZIV"), os.Getenv("DB_HESLO"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_JMENO"))
 	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
 		panic("Databaze se pokazila" + err.Error())
@@ -61,6 +62,7 @@ func main() {
 		var input string
 		fmt.Scan(&input)
 		fmt.Println()
+
 		if input == "s" {
 			PushSlovnik()
 		} else if input == "p" {

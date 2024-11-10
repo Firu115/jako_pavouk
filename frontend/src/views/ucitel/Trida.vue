@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { onMounted, ref, computed, onUnmounted } from "vue";
+import { onMounted, ref, computed, onUnmounted, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
@@ -9,6 +9,7 @@ import { useHead } from "@unhead/vue";
 import Tooltip from "../../components/Tooltip.vue";
 import NastaveniTridy from "./NastaveniTridy.vue";
 import KodTridy from "../../components/KodTridy.vue";
+import PrepinacTabu from "../../components/PrepinacTabu.vue";
 import { mobil } from "../../stores";
 
 const id = useRoute().params.id
@@ -20,7 +21,7 @@ const prace = ref([] as Prace[])
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
 const vsechnyTridy = ref([] as { id: number, jmeno: string, kod: string, zamknuta: boolean, pocet_studentu: number, klavesnice: string, pocet_praci: number }[])
 
-const tab = ref("zaci") // zaci, prace, zadani, nastaveni
+const prepinacTabu = useTemplateRef("prepinac-tabu")
 
 const selectnutej = ref(-1)
 const studentOznacenej = ref({ jmeno: "...", email: "...@...", dokonceno: 0, daystreak: 0, rychlost: -1, uspesnost: -1, klavesnice: "QWERTZ", nejcastejsiChyby: new Map })
@@ -208,7 +209,7 @@ function prejmenovatTridu(e: Event, novyJmeno: string) {
 }
 
 function zadano() {
-    tab.value = "prace"
+    prepinacTabu.value!.tab = "prace"
     get()
 }
 
@@ -271,20 +272,10 @@ const posledniRychlostPrace = computed(() => {
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
 
-    <div v-if="tab != 'zadani'" id="prepinac-tabu">
-        <input id="r1" type="radio" value="zaci" v-model="tab">
-        <label for="r1">Studenti</label>
+    <PrepinacTabu v-show="prepinacTabu?.tab != 'zadani'" :taby="[['zaci', 'Studenti'], ['prace', 'Práce'], ['nastaveni', 'Nastavení']]" default-tab="zaci"
+        ref="prepinac-tabu" />
 
-        <input id="r2" type="radio" value="prace" v-model="tab">
-        <label for="r2">Práce</label>
-
-        <input id="r3" type="radio" value="nastaveni" v-model="tab">
-        <label for="r3">Nastavení</label>
-
-        <span></span>
-    </div>
-
-    <div v-if="tab == 'zaci'" id="pulic">
+    <div v-if="prepinacTabu?.tab == 'zaci'" id="pulic">
         <div id="kontejner">
             <div v-for="st in studenti" class="blok" @click="select(st.id)" :class="{ oznaceny: selectnutej == st.id }" :key="st.id">
                 <div>
@@ -379,7 +370,7 @@ const posledniRychlostPrace = computed(() => {
             <h2 v-else>Vyberte studenta!</h2>
         </div>
     </div>
-    <div v-else-if="tab == 'prace' && copyPraciIndex == -1" id="pulic-praci">
+    <div v-else-if="prepinacTabu?.tab == 'prace' && copyPraciIndex == -1" id="pulic-praci">
         <div id="prace-uprava-kontejner">
             <div v-for="v, i in prace" :key="v.id" class="uprava-pill" :style="{ opacity: (smazatPraciID == v.id || smazatPraciID == 0) ? 1 : 0.4 }">
                 <div class="copy-btn" @click="copyPraciIndex = i">
@@ -420,7 +411,7 @@ const posledniRychlostPrace = computed(() => {
             </div>
         </div>
     </div>
-    <div v-else-if="tab == 'prace' && copyPraciIndex != -1" id="copy-menu">
+    <div v-else-if="prepinacTabu?.tab == 'prace' && copyPraciIndex != -1" id="copy-menu">
         <select v-model="copyTrida">
             <option :value="0">Vyberte třídu</option>
             <option v-for="t in vsechnyTridy" :value="t.id" :key="t.id">{{ t.jmeno }}</option>
@@ -431,15 +422,15 @@ const posledniRychlostPrace = computed(() => {
         </div>
     </div>
 
-    <ZadaniPrace v-else-if="tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="posledniRychlostPrace" />
-    <NastaveniTridy v-else-if="tab == 'nastaveni'" ref="nastaveni" :trida="trida"
+    <ZadaniPrace v-else-if="prepinacTabu?.tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="posledniRychlostPrace" />
+    <NastaveniTridy v-else-if="prepinacTabu?.tab == 'nastaveni'" ref="nastaveni" :trida="trida"
         :pocetStudentu="vsechnyTridy.find(t => t.id === trida.id)!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" @refresh="get" />
 
-    <div v-if="tab == 'prace' || tab == 'zadani'" id="pridat" @click="tab = (tab == 'prace' ? 'zadani' : 'prace')"
-        :style="{ transform: tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">
+    <div v-if="prepinacTabu?.tab == 'prace' || prepinacTabu?.tab == 'zadani'" id="pridat"
+        @click="prepinacTabu!.tab = (prepinacTabu?.tab == 'prace' ? 'zadani' : 'prace')"
+        :style="{ transform: prepinacTabu?.tab == 'zadani' ? 'rotate(-45deg)' : 'rotate(0deg)' }">
         <img src="../../assets/icony/plus.svg" alt="Přidat">
     </div>
-
 </template>
 <style scoped>
 .uprava-pill {
@@ -714,55 +705,6 @@ form input::placeholder {
 
 #pridat:hover {
     background-color: var(--fialova);
-}
-
-#prepinac-tabu {
-    display: flex;
-    padding: 8px;
-    border-radius: 100px;
-    background-color: var(--tmave-fialova);
-    margin: 20px 0;
-    height: 46px;
-}
-
-#prepinac-tabu input {
-    display: none;
-}
-
-#prepinac-tabu label {
-    padding: 5px;
-    width: 100px;
-    z-index: 1;
-    cursor: pointer;
-    color: #c5c5c5;
-    transition: 0.15s;
-    font-weight: 400;
-}
-
-#prepinac-tabu input:checked+label {
-    font-weight: 500;
-    color: var(--bila);
-}
-
-#prepinac-tabu span {
-    position: absolute;
-    background-color: var(--fialova);
-    width: 100px;
-    height: 30px;
-    border-radius: 100px;
-    transition: 0.15s ease-out;
-}
-
-input[id="r1"]:checked~span {
-    transform: translateX(0px);
-}
-
-input[id="r2"]:checked~span {
-    transform: translateX(100px);
-}
-
-input[id="r3"]:checked~span {
-    transform: translateX(200px);
 }
 
 #pred-kliknutim {

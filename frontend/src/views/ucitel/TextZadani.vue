@@ -2,6 +2,7 @@
 import { ref, watch } from "vue"
 
 const text = ref("")
+const vyska = "calc(100vh - 60px - 40px - 25px - 30px - 40px - 11px)"
 
 const textarea = ref<HTMLElement | null>(null)
 const div = ref<HTMLElement>()
@@ -38,13 +39,12 @@ defineExpose({ text })
     <div ref="div" v-html="sus"></div>
     <textarea ref="textarea" placeholder="Text který budou žáci psát..." v-model="text" @scroll="scrollDiv" />
 </template>
-
 <style scoped>
 div {
     position: absolute;
     padding: 10px;
     width: 410px;
-    height: calc(100vh - 60px - 40px - 25px - 30px - 40px - 11px);
+    height: v-bind(vyska);
     /* celá obrazovka - všechno co je nad tím */
     text-align: start;
     top: 55px;
@@ -68,7 +68,7 @@ textarea {
     position: relative;
     background-color: transparent;
     border: 0;
-    height: 100%;
+    height: v-bind(vyska);
     width: 100%;
     font-size: 16px !important;
     text-decoration: none;

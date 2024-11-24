@@ -91,7 +91,7 @@ const tridaJmeno = computed(() => {
 
 </script>
 <template>
-    <div id="uprava-tridy">
+    <div id="nastaveni">
         <KodTridy :kod="trida.kod" :id="trida.id" :zamknuta="trida.zamknuta" />
 
         <form>
@@ -155,69 +155,6 @@ const tridaJmeno = computed(() => {
     </div>
 </template>
 <style scoped>
-.toggle-contejner div {
-    padding: 7px;
-}
-
-.toggle-contejner {
-    font-size: 16px;
-    width: 160px;
-    height: 34px;
-}
-
-#uprava-tridy {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-}
-
-#uprava-tridy *:first-child {
-    align-self: center !important;
-}
-
-#uprava-tridy>form {
-    display: flex;
-    flex-direction: column;
-    max-width: 450px;
-    align-items: center;
-    gap: 8px;
-    background-color: var(--tmave-fialova);
-    border-radius: 10px;
-    padding: 15px 25px;
-    margin: 0 5vw;
-}
-
-#uprava-tridy>form>div {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-#uprava-tridy .tlacitko,
-#uprava-tridy .cervene-tlacitko {
-    margin: 0;
-    height: auto;
-    min-height: 34px;
-    padding: 5px 25px;
-    width: auto;
-}
-
-form>span {
-    opacity: 0.5;
-    font-size: 14px;
-    margin-bottom: -4px;
-}
-
-form span:first-of-type {
-    margin-top: 8px;
-}
-
-form span:last-of-type {
-    margin-bottom: 0;
-}
 
 /* firefox nenenene */
 @supports(-webkit-tap-highlight-color: black) {
@@ -239,6 +176,4 @@ select option {
     font-weight: 400;
 }
 
-@media screen and (max-width: 1100px) {
-}
 </style>

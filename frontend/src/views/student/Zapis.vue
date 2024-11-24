@@ -91,7 +91,7 @@ function checkPrihlaseni() {
 <template>
     <h1>Zápis do třídy</h1>
     <div id="kontejner">
-        <img src="../../assets/pavoukSkola.svg" alt="Pavouk před školou">
+        <img src="../../assets/pavoukSkola.svg" alt="Pavouk před školou" width="250" height="175">
         <form v-if="state == 'kod'">
             <h2>Zadej kód:</h2>
             <input type="text" v-model="kod" placeholder="ABCD" @focus="checkPrihlaseni">
@@ -104,8 +104,16 @@ function checkPrihlaseni() {
             <button class="tlacitko" @click="zapsatSe">Zapsat se</button>
         </form>
     </div>
+    <RouterLink to="/skolni-system">Jsem učitel/ka. </RouterLink>
 </template>
 <style scoped>
+/* eslint-disable-next-line vue-scoped-css/no-unused-selector */
+a {
+    color: white;
+    margin-top: 16px;
+    font-size: 1.1em;
+}
+
 .tlacitko {
     margin: 5px;
     width: 120px;
@@ -121,7 +129,6 @@ h2 {
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     display: flex;
-    margin-top: 20px;
     padding: 40px 25px 20px 25px;
     gap: 10px;
     width: 550px;

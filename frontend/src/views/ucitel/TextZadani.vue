@@ -37,7 +37,7 @@ defineExpose({ text })
 </script>
 <template>
     <div ref="div" v-html="sus"></div>
-    <textarea ref="textarea" placeholder="Text který budou žáci psát..." v-model="text" @scroll="scrollDiv" />
+    <textarea ref="textarea" placeholder="Text, který budou žáci psát..." v-model="text" @scroll="scrollDiv" />
 </template>
 <style scoped>
 div {

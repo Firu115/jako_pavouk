@@ -164,7 +164,7 @@ const odhadovanaDelkaTextu = computed(() => {
 </script>
 <template>
     <div id="pulic-zadani">
-        <div id="nastaveni">
+        <div id="parametry">
             <h2>Nastavení</h2>
 
             <div id="moznosti">
@@ -355,7 +355,7 @@ select option:disabled {
     width: 25px;
 }
 
-#nastaveni {
+#parametry {
     width: 410px;
     display: flex;
     gap: 10px;

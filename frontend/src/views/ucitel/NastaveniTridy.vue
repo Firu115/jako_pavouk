@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, PropType, ref, computed } from "vue";
+import { onMounted, PropType, ref, computed, useTemplateRef } from "vue";
 import { checkTeapot, getToken, pridatOznameni } from "../../utils";
 import { moznostiRocnik, moznostiTrida, moznostiSkupina } from "../../stores";
 import axios from "axios";
@@ -35,16 +35,28 @@ const tridaJmenoUprava = ref()
 const tridaSkupinaUprava = ref()
 const klavesniceUprava = ref()
 
+let smazatZprava = ref("")
+
 function smazatTridu(e: Event) {
     e.preventDefault()
 
     if (props.pocetStudentu != 0) {
-        let zprava: string = ""
-        if (props.pocetStudentu == 1) zprava = "1 student už je v této třídě."
-        else if (props.pocetStudentu <= 4) zprava = `${props.pocetStudentu} studenti už jsou v této třídě.`
-        else zprava = `${props.pocetStudentu} studentů už je v této třídě.`
-        if (!confirm(zprava + " Opravdu ji chcete smazat?")) return
+        if (props.pocetStudentu == 1) smazatZprava.value = "1 student už je v této třídě."
+        else if (props.pocetStudentu <= 4) smazatZprava.value = `${props.pocetStudentu} studenti už jsou v této třídě.`
+        else smazatZprava.value = `${props.pocetStudentu} studentů už je v této třídě.`
+        dialog1.value?.showModal()
+    } else {
+        postSmazat(e)
     }
+}
+
+function zavritDialog(e: Event) {
+    e.preventDefault()
+    dialog1.value?.close()
+}
+
+function postSmazat(e: Event) {
+    e.preventDefault()
 
     axios.post("/skola/zmena-tridy", { trida_id: props.trida.id, zmena: "smazat" }, {
         headers: {
@@ -88,6 +100,8 @@ onMounted(() => {
 const tridaJmeno = computed(() => {
     return `${tridaRocnikUprava.value}${tridaJmenoUprava.value}${tridaSkupinaUprava.value != '-' ? ' ￨ ' + tridaSkupinaUprava.value : ''}`
 })
+
+const dialog1 = useTemplateRef("dialog1")
 
 </script>
 <template>
@@ -152,10 +166,20 @@ const tridaJmeno = computed(() => {
                 <button type="button" class="cervene-tlacitko" @click="smazatTridu">Smazat třídu</button>
             </div>
         </form>
+
+        <dialog ref="dialog1">
+            <div id="dialog-kontejner">
+                <h2>Opravdu chcete smazat třídu?</h2>
+                <div>
+                    <button class="cervene-tlacitko" @click="postSmazat">Opravdu smazat</button>
+                    <button class="tlacitko" @click="zavritDialog">Zrušit</button>
+                </div>
+                <span>{{ smazatZprava }}</span>
+            </div>
+        </dialog>
     </div>
 </template>
 <style scoped>
-
 /* firefox nenenene */
 @supports(-webkit-tap-highlight-color: black) {
     select:hover {
@@ -176,4 +200,27 @@ select option {
     font-weight: 400;
 }
 
+#dialog-kontejner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+}
+
+#dialog-kontejner>span {
+    color: var(--seda);
+}
+
+#dialog-kontejner>div {
+    display: flex;
+    gap: 1em;
+}
+
+dialog {
+    width: 410px;
+    height: 140px;
+    margin-left: -205px;
+    margin-top: -70px;
+}
 </style>

@@ -50,7 +50,12 @@ function get() {
         if (sources.length == 0) {
             rocniky.value.forEach(r => {
                 r.forEach(t => {
-                    let s = new EventSource("http://127.0.0.1:1323/api/skola/zaci-stream/" + t.id)
+                    let s: EventSource
+                    if (window.location.hostname == "jakopavouk.cz") {
+                        s = new EventSource("/api/skola/zaci-stream/" + t.id)
+                    } else {
+                        s = new EventSource("http://127.0.0.1:1323/api/skola/zaci-stream/" + t.id)
+                    }
                     s.onmessage = function () {
                         get()
                     }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { onMounted, ref, computed, onUnmounted, useTemplateRef } from "vue";
+import { onMounted, ref, computed, onUnmounted, useTemplateRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
@@ -48,7 +48,12 @@ let source: EventSource | null = null
 onMounted(() => {
     get()
 
-    source = new EventSource("http://127.0.0.1:1323/api/skola/zaci-stream/" + id)
+    if (window.location.hostname == "jakopavouk.cz") {
+        source = new EventSource("/api/skola/zaci-stream/" + id)
+    } else {
+        source = new EventSource("http://127.0.0.1:1323/api/skola/zaci-stream/" + id)
+    }
+
     source.onmessage = function () {
         get()
     }
@@ -265,6 +270,15 @@ const posledniRychlostPrace = computed(() => {
     return -1
 })
 
+const dialog1 = useTemplateRef("dialog1")
+
+watch(copyPraciIndex, () => {
+    if (copyPraciIndex.value == -1) {
+        dialog1.value?.close()
+    } else {
+        dialog1.value?.showModal()
+    }
+})
 </script>
 <template>
     <h1 class="nadpis-se-sipkou" style="margin: 0; direction: ltr;">
@@ -272,8 +286,8 @@ const posledniRychlostPrace = computed(() => {
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
 
-    <PrepinacTabu v-show="prepinacTabu?.tab != 'zadani'" :taby="[['zaci', 'Studenti'], ['prace', 'Práce'], ['nastaveni', 'Nastavení']]" default-tab="zaci"
-        ref="prepinac-tabu" />
+    <PrepinacTabu v-show="prepinacTabu?.tab != 'zadani'" :taby="[['zaci', 'Studenti'], ['prace', 'Práce'], ['nastaveni', 'Nastavení']]"
+        default-tab="zaci" ref="prepinac-tabu" />
 
     <div v-if="prepinacTabu?.tab == 'zaci'" id="pulic">
         <div id="kontejner">
@@ -370,7 +384,7 @@ const posledniRychlostPrace = computed(() => {
             <h2 v-else>Vyberte studenta!</h2>
         </div>
     </div>
-    <div v-else-if="prepinacTabu?.tab == 'prace' && copyPraciIndex == -1" id="pulic-praci">
+    <div v-else-if="prepinacTabu?.tab == 'prace'" id="pulic-praci">
         <div id="prace-uprava-kontejner">
             <div v-for="v, i in prace" :key="v.id" class="uprava-pill" :style="{ opacity: (smazatPraciID == v.id || smazatPraciID == 0) ? 1 : 0.4 }">
                 <div class="copy-btn" @click="copyPraciIndex = i">
@@ -411,20 +425,23 @@ const posledniRychlostPrace = computed(() => {
             </div>
         </div>
     </div>
-    <div v-else-if="prepinacTabu?.tab == 'prace' && copyPraciIndex != -1" id="copy-menu">
-        <select v-model="copyTrida">
-            <option :value="0">Vyberte třídu</option>
-            <option v-for="t in vsechnyTridy" :value="t.id" :key="t.id">{{ t.jmeno }}</option>
-        </select>
-        <div>
-            <button class="tlacitko" @click="copyPraciIndex = -1">Zrušit</button>
-            <button class="tlacitko" :disabled="copyTrida == 0" @click="zadatDoJineTridy">Zadat práci</button>
-        </div>
-    </div>
-
     <ZadaniPrace v-else-if="prepinacTabu?.tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="posledniRychlostPrace" />
     <NastaveniTridy v-else-if="prepinacTabu?.tab == 'nastaveni'" ref="nastaveni" :trida="trida"
         :pocetStudentu="vsechnyTridy.find(t => t.id === trida.id)!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" @refresh="get" />
+
+    <dialog ref="dialog1">
+        <div id="copy-menu">
+            <h2>Zkopírovat práci {{ prace.length - copyPraciIndex }} do:</h2>
+            <select v-model="copyTrida">
+                <option :value="0">Vyberte třídu</option>
+                <option v-for="t in vsechnyTridy" :value="t.id" :key="t.id">{{ t.id == trida.id ? t.jmeno + " (Tato třída)" : t.jmeno }}</option>
+            </select>
+            <div>
+                <button class="tlacitko" @click="copyPraciIndex = -1">Zrušit</button>
+                <button class="tlacitko" :disabled="copyTrida == 0" @click="zadatDoJineTridy">Zadat práci</button>
+            </div>
+        </div>
+    </dialog>
 
     <div v-if="prepinacTabu?.tab == 'prace' || prepinacTabu?.tab == 'zadani'" id="pridat"
         @click="prepinacTabu!.tab = (prepinacTabu?.tab == 'prace' ? 'zadani' : 'prace')"
@@ -463,13 +480,19 @@ const posledniRychlostPrace = computed(() => {
     position: relative;
 }
 
+dialog {
+    width: 320px;
+    height: 160px;
+    margin-left: -160px;
+    margin-top: -80px;
+}
+
 #copy-menu {
-    background-color: var(--tmave-fialova);
-    padding: 15px;
-    border-radius: 10px;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 15px;
 }
 

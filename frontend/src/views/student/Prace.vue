@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, MojeMapa, pridatOznameni } from "../../utils";
-import SipkaZpet from "../../components/SipkaZpet.vue";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import Vysledek from "../../components/Vysledek.vue";
@@ -102,8 +101,7 @@ function prodlouzit() {
 </script>
 
 <template>
-    <h1 class="nadpis-se-sipkou" style="margin: 0; direction: ltr;">
-        <SipkaZpet />
+    <h1 style="margin: 0;">
         Práce ve třídě
     </h1>
 

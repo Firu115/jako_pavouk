@@ -231,7 +231,7 @@ const odhadovanaDelkaTextu = computed(() => {
             <div>
                 <span>{{ getZnakyASlova() }}</span>
                 <Tooltip v-show="odhadovanaDelkaTextu != -1" :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat až do konce. Počítá s rychlostí z poslední práce.`"
-                    :sirka="350" :vzdalenost="-78">
+                    :sirka="350" :vzdalenost="-190" :vzdalenostX="120">
                     <span>~ {{ odhadovanaDelkaTextu }} znaků</span>
                 </Tooltip>
             </div>

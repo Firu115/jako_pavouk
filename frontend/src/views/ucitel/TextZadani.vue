@@ -21,12 +21,14 @@ function scrollDiv() {
 
 watch(text, () => {
     let t: string = text.value
+    text.value = text.value.replace(lineBreak, "")
 
     t = text.value.replace(red, `<mark>$&</mark>`)
     t = t.replace(orange, "<mark2>$&</mark2>")
     t = t.replace(lineBreak, "<mark>↵\n</mark>")
     t = t.replace(viceMezer, "<mark>$&</mark>")
     t = t.replace(mezeraNaZacatku, "<mark>$&</mark>")
+
 
     console.log(t, text.value)
     sus.value = t

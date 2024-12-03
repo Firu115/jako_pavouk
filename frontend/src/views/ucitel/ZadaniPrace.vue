@@ -102,11 +102,17 @@ function smazatVelkaPismena() {
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.toLocaleLowerCase()
 }
-
+ 
 function smazatEnterAMezery() {
     if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.replace(/\n/g, " ").replace(/ {2,}/g, " ").trim()
+}
+
+function vymenitUvozovky() {
+    if (textovePole.value!.text.length == 0) return
+    puvodniText.value = textovePole.value!.text
+    textovePole.value!.text = textovePole.value!.text.replace(/[„“”‟❞❝＂⹂…]/g, '"').replace(/[‚’‘‛❛❜]/g, "'")
 }
 
 function zrusitPosledniUpravu() {
@@ -190,6 +196,7 @@ const odhadovanaDelkaTextu = computed(() => {
                         <button @click="smazatVelkaPismena" class="tlacitko">Smazat velká písmena</button>
                         <button @click="smazatDiakritiku" class="tlacitko">Smazat diakritiku</button>
                         <button @click="smazatEnterAMezery" class="tlacitko">Smazat mezery navíc</button>
+                        <button @click="vymenitUvozovky" class="tlacitko">Vyměnit uvozovky</button>
                     </div>
 
                     <div class="kontejner">
@@ -230,7 +237,8 @@ const odhadovanaDelkaTextu = computed(() => {
 
             <div>
                 <span>{{ getZnakyASlova() }}</span>
-                <Tooltip v-show="odhadovanaDelkaTextu != -1" :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat až do konce. Počítá s rychlostí z poslední práce.`"
+                <Tooltip v-show="odhadovanaDelkaTextu != -1"
+                    :zprava="`Odhad, jak má být text dlouhý, aby ho studenti nestihli napsat až do konce. Počítá s rychlostí z poslední práce.`"
                     :sirka="350" :vzdalenost="-190" :vzdalenostX="120">
                     <span>~ {{ odhadovanaDelkaTextu }} znaků</span>
                 </Tooltip>

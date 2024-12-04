@@ -112,7 +112,7 @@ function smazatEnterAMezery() {
 function vymenitUvozovky() {
     if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
-    textovePole.value!.text = textovePole.value!.text.replace(/[„“”‟❞❝＂⹂…]/g, '"').replace(/[‚’‘‛❛❜]/g, "'")
+    textovePole.value!.text = textovePole.value!.text.replace(/[„“”‟❞❝＂⹂]/g, '"').replace(/[‚’‘‛❛❜]/g, "'")
 }
 
 function zrusitPosledniUpravu() {

@@ -97,7 +97,8 @@ function vytvorit(e: Event) {
 const prepinacTabu = useTemplateRef("prepinac-tabu")
 
 const pridatEmail = ref("")
-function pridatUcitele() {
+function pridatUcitele(e: Event) {
+    e.preventDefault()
     axios.post("/skola/upravit-ucitele", { email: pridatEmail.value, akce: "pridat" }, {
         headers: {
             Authorization: `Bearer ${getToken()}`

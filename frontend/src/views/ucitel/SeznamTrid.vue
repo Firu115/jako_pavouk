@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import axios from "axios";
-import { onMounted, onUnmounted, ref } from "vue";
-import { checkTeapot, getToken, pridatOznameni } from "../../utils";
+import { onMounted, onUnmounted, ref, useTemplateRef } from "vue";
+import { getToken, pridatOznameni } from "../../utils";
 import { moznostiRocnik, moznostiTrida, moznostiSkupina, prihlasen } from "../../stores";
 import { useHead } from "@unhead/vue";
 import { useRouter } from "vue-router";
+import PrepinacTabu from "../../components/PrepinacTabu.vue";
+import SeznamUcitelu from "../../components/SeznamUcitelu.vue";
 
 const router = useRouter()
 
@@ -64,14 +66,13 @@ function get() {
             })
         }
     }).catch(e => {
-        if (checkTeapot(e)) return
+        pridatOznameni("Chyba serveru")
+        if (e.response === undefined) router.push("/")
         if (e.response.status == 401) {
             pridatOznameni("Sem nemáš přístup")
             router.push("/")
             return
         }
-        console.log(e)
-        pridatOznameni("Chyba serveru")
     }).finally(() => {
         nacitam.value = false
     })
@@ -88,93 +89,124 @@ function vytvorit(e: Event) {
         pridavani.value = false
         get()
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
+        console.log(e)
+        pridatOznameni("Chyba serveru")
+    })
+}
+
+const prepinacTabu = useTemplateRef("prepinac-tabu")
+
+const pridatEmail = ref("")
+function pridatUcitele() {
+    axios.post("/skola/upravit-ucitele", { email: pridatEmail.value, akce: "pridat" }, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
         }
+    }).then(() => {
+        pridavani.value = false
+    }).catch(e => {
+        console.log(e)
+        pridatOznameni("Chyba serveru")
     })
 }
 
 </script>
 <template>
-    <h1>Třídy</h1>
-    <div id="rocniky" v-if="!pridavani && rocniky.size !== 0">
-        <div v-for="[rocnik, tridy] in rocniky" :key="rocnik" class="rocnik">
-            <h2>{{ rocnik }}{{ isNaN(+rocnik) ? "" : ". ročník" }}</h2>
-            <div id="kontejner">
-                <div class="blok" v-for="t in tridy" :key="t.id" @click="$router.push('/skola/' + t.id)">
-                    <h3>{{ t.jmeno }}</h3>
+    <h1 style="margin: 0;">Škola</h1>
+    <PrepinacTabu v-show="!pridavani" :taby="[['tridy', 'Třídy'], ['ucitele', 'Učitelé']]" default-tab="tridy" ref="prepinac-tabu" />
 
-                    <hr style="margin: 0 8px 8px 8px; border: #c0c0c0 1px solid;">
+    <div id="tridy" v-if="prepinacTabu?.tab === 'tridy'">
+        <div id="rocniky" v-if="!pridavani && rocniky.size !== 0">
+            <div v-for="[rocnik, tridy] in rocniky" :key="rocnik" class="rocnik">
+                <h2>{{ rocnik }}{{ isNaN(+rocnik) ? "" : ". ročník" }}</h2>
+                <div id="kontejner">
+                    <div class="blok" v-for="t in tridy" :key="t.id" @click="$router.push('/skola/' + t.id)">
+                        <h3>{{ t.jmeno }}</h3>
 
-                    <div style="display: flex; justify-content: space-around;">
-                        <div class="statistiky">
-                            <span v-if="t.pocet_studentu == 1"><b>{{ t.pocet_studentu }}</b> student</span>
-                            <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b> studenti</span>
-                            <span v-else><b>{{ t.pocet_studentu }}</b> studentů</span>
+                        <hr style="margin: 0 8px 8px 8px; border: #c0c0c0 1px solid;">
 
-                            <span v-if="t.pocet_praci == 0 || t.pocet_praci > 4"><b>{{ t.pocet_praci }}</b> prací</span>
-                            <span v-else><b>{{ t.pocet_praci }}</b> práce</span>
+                        <div style="display: flex; justify-content: space-around;">
+                            <div class="statistiky">
+                                <span v-if="t.pocet_studentu == 1"><b>{{ t.pocet_studentu }}</b> student</span>
+                                <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b> studenti</span>
+                                <span v-else><b>{{ t.pocet_studentu }}</b> studentů</span>
+
+                                <span v-if="t.pocet_praci == 0 || t.pocet_praci > 4"><b>{{ t.pocet_praci }}</b> prací</span>
+                                <span v-else><b>{{ t.pocet_praci }}</b> práce</span>
+                            </div>
+
+                            <img v-if="!t.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída">
+                            <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída">
                         </div>
-
-                        <img v-if="!t.zamknuta" src="../../assets/icony/zamekOpen.svg" alt="Odemčená třída">
-                        <img v-else src="../../assets/icony/zamekClosed.svg" alt="Zamčená třída">
                     </div>
                 </div>
             </div>
         </div>
+        <div v-else-if="pridavani">
+            <form>
+                <h2>Vytvořit třídu</h2>
+                <div>
+                    <h3>Ročník:</h3>
+                    <select v-model="rocnik">
+                        <option v-for="v in moznostiRocnik" :value="v" :key="v">{{ v }}</option>
+                    </select>
+                </div>
+
+                <div>
+                    <h3>Písmeno:</h3>
+                    <select v-model="trida">
+                        <option v-for="v in moznostiTrida" :value="v" :key="v">{{ v }}</option>
+                    </select>
+                </div>
+
+                <div>
+                    <h3>Skupina:</h3>
+                    <select v-model="skupina">
+                        <option v-for="v in moznostiSkupina" :value="v" :key="v">{{ v }}</option>
+                    </select>
+                </div>
+
+                <button class="tlacitko" @click="vytvorit">Vytvořit</button>
+
+                <span>Podle jména se třídy řadí do ročníků v seznamu tříd.</span>
+                <span>
+                    Skupina je určena pro rozdělení třídy. To se může hodit,
+                    pokud vyučujete třídy po menších skupinkách.
+                    <br>
+                    Např.: <b>3.B&nbsp;￨&nbsp;1</b> a <b>3.B&nbsp;￨&nbsp;2</b>.
+                </span>
+            </form>
+        </div>
+        <div v-else-if="rocniky.size === 0 && nacitam">
+            Načítám...
+        </div>
+        <div v-else style="background-color: var(--tmave-fialova); padding: 20px; border-radius: 10px; max-width: 450px; margin: 0 5vw;">
+            <h2 style="font-size: 21px;">Vítejte v rozhraní pro učitele!</h2>
+            <br>
+            Zde se vám budou třídy řadit do ročníků.
+            <br>
+            Žáci se do nich mohou připojit pomocí 4místného kódu, který bude pro každou třídu automaticky vytvořen.
+        </div>
+
+        <div v-if="rocniky.size == 0 && !pridavani && !nacitam" id="text-prace">
+            <span>Zatím tu nejsou žádné třídy. <br>První vytvoříte pomocí tohoto tlačítka.</span>
+            <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
+        </div>
     </div>
-    <div v-else-if="pridavani">
+    <SeznamUcitelu v-else-if="prepinacTabu?.tab === 'ucitele' && !pridavani" />
+    <div v-if="pridavani && prepinacTabu?.tab === 'ucitele'">
         <form>
-            <h2>Vytvořit třídu</h2>
+            <h2>Přidat učitele</h2>
             <div>
-                <h3>Ročník:</h3>
-                <select v-model="rocnik">
-                    <option v-for="v in moznostiRocnik" :value="v" :key="v">{{ v }}</option>
-                </select>
+                <h3>E-mail:</h3>
+                <input type="email" placeholder="Např: pavoukova@jakopavouk.cz" v-model="pridatEmail">
             </div>
 
-            <div>
-                <h3>Písmeno:</h3>
-                <select v-model="trida">
-                    <option v-for="v in moznostiTrida" :value="v" :key="v">{{ v }}</option>
-                </select>
-            </div>
-
-            <div>
-                <h3>Skupina:</h3>
-                <select v-model="skupina">
-                    <option v-for="v in moznostiSkupina" :value="v" :key="v">{{ v }}</option>
-                </select>
-            </div>
-
-            <button class="tlacitko" @click="vytvorit">Vytvořit</button>
+            <button class="tlacitko" @click="pridatUcitele">Přidat</button>
 
             <span>Podle jména se třídy řadí do ročníků v seznamu tříd.</span>
-            <span>
-                Skupina je určena pro rozdělení třídy. To se může hodit,
-                pokud vyučujete třídy po menších skupinkách.
-                <br>
-                Např.: <b>3.B&nbsp;￨&nbsp;1</b> a <b>3.B&nbsp;￨&nbsp;2</b>.
-            </span>
         </form>
     </div>
-    <div v-else-if="rocniky.size === 0 && nacitam">
-        Načítám...
-    </div>
-    <div v-else style="background-color: var(--tmave-fialova); padding: 20px; border-radius: 10px; max-width: 450px; margin: 0 5vw;">
-        <h2 style="font-size: 21px;">Vítejte v rozhraní pro učitele!</h2>
-        <br>
-        Zde se vám budou třídy řadit do ročníků.
-        <br>
-        Žáci se do nich mohou připojit pomocí 4místného kódu, který bude pro každou třídu automaticky vytvořen.
-    </div>
-
-    <div v-if="rocniky.size == 0 && !pridavani && !nacitam" id="text-prace">
-        <span>Zatím tu nejsou žádné třídy. <br>První vytvoříte pomocí tohoto tlačítka.</span>
-        <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
-    </div>
-
     <div id="pridat" @click="pridavani = !pridavani" :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">
         <img src="../../assets/icony/plus.svg" alt="Přidat">
     </div>
@@ -194,7 +226,7 @@ form {
     background-color: var(--tmave-fialova);
     border-radius: 10px;
     padding: 15px 25px;
-    margin: 0 5vw;
+    margin: 5.8em 5vw 0 5vw;
 }
 
 form>h2 {
@@ -223,6 +255,27 @@ form span:last-of-type {
     margin-bottom: 0;
 }
 
+form input[type=text], form input[type=email] {
+    width: 73%;
+    height: 36px;
+    background-color: var(--fialova);
+    border: 0;
+    border-radius: 5px;
+    transition: all 0.2s cubic-bezier(0.5, 0, 0.5, 1) 0s;
+    color: var(--bila);
+    padding: 10px;
+    font-weight: normal;
+    font-size: 20px;
+}
+
+form input[type=text]:focus, form input[type=email]:focus {
+    width: 75%;
+}
+
+::placeholder {
+    color: rgba(255, 255, 255, 0.42);
+}
+
 #pridat {
     background-color: var(--tmave-fialova);
     border-radius: 100%;
@@ -238,6 +291,7 @@ form span:last-of-type {
     cursor: pointer;
     transition: background-color 0.15s, transform 0.3s;
     box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.75);
+    user-select: none;
 }
 
 #pridat:hover {

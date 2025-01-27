@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import { checkTeapot, getToken, MojeMapa, pridatOznameni } from "../../utils";
 import { onMounted, ref } from "vue";
 import axios from "axios";
@@ -68,12 +68,20 @@ onMounted(() => {
     get()
 })
 
+const pise = ref(false)
+onBeforeRouteLeave(() => {
+    if (pise.value && !confirm("You have unsaved changes. Are you sure you want to leave?")) {
+        return false;
+    }
+})
+
 function konecTextu(o: number, p: number, n: MojeMapa, d: number) {
     opravenePocet.value = o
     preklepy.value = p
     nejcastejsiChyby.value = new MojeMapa(n)
     konec.value = true
     delkaNapsanehoTextu.value = d
+    pise.value = false
 }
 
 function prodlouzit() {
@@ -105,7 +113,7 @@ function prodlouzit() {
         Práce ve třídě
     </h1>
 
-    <Psani v-if="!konec" @konec="konecTextu" @prodlouzit="prodlouzit" :text :klavesnice :hide-klavesnice="false" :nacitamNovej :cas="cas" :delkaTextu
+    <Psani v-if="!konec" @pise="pise = true" @konec="konecTextu" @prodlouzit="prodlouzit" :text :klavesnice :hide-klavesnice="false" :nacitamNovej :cas="cas" :delkaTextu
         :resetBtn="false" />
 
     <Vysledek v-else :preklepy :opravenych="opravenePocet" :delkaTextu="delkaNapsanehoTextu" :cas="cas" :cislo :posledni="true" :nejcastejsiChyby

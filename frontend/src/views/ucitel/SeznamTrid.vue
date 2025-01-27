@@ -10,6 +10,7 @@ import SeznamUcitelu from "../../components/SeznamUcitelu.vue";
 
 const router = useRouter()
 
+const skola = ref({} as {jmeno: string, id: number, aktivni: boolean})
 type Trida = { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number, pocet_praci: number }
 const rocniky = ref(new Map<string, Trida[]>())
 const pridavani = ref(false)
@@ -23,7 +24,7 @@ const nacitam = ref(true)
 const sources: EventSource[] = []
 
 useHead({
-    title: "Seznam tříd"
+    title: "Škola"
 })
 
 onMounted(() => {
@@ -45,6 +46,8 @@ function get() {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(response => {
+        skola.value = response.data.skola
+
         Object.keys(response.data.tridy).forEach(key => {
             rocniky.value.set(key, response.data.tridy[key].sort((a: { jmeno: string }, b: { jmeno: string }) => a.jmeno.localeCompare(b.jmeno)))
         })
@@ -106,15 +109,14 @@ function pridatUcitele(e: Event) {
     }).then(() => {
         pridavani.value = false
     }).catch(e => {
-        console.log(e)
-        pridatOznameni("Chyba serveru")
+        pridatOznameni(e.response.data.error)
     })
 }
 
 </script>
 <template>
-    <h1 style="margin: 0;">Škola</h1>
-    <PrepinacTabu v-show="!pridavani" :taby="[['tridy', 'Třídy'], ['ucitele', 'Učitelé']]" default-tab="tridy" ref="prepinac-tabu" />
+    <h1 style="margin: 0;">{{ skola.jmeno ? skola.jmeno : "Škola" }}</h1>
+    <PrepinacTabu v-show="!pridavani" :taby="[['tridy', 'Moje Třídy'], ['ucitele', 'Učitelé']]" default-tab="tridy" sirka="120px" ref="prepinac-tabu" />
 
     <div id="tridy" v-if="prepinacTabu?.tab === 'tridy'">
         <div id="rocniky" v-if="!pridavani && rocniky.size !== 0">
@@ -204,8 +206,6 @@ function pridatUcitele(e: Event) {
             </div>
 
             <button class="tlacitko" @click="pridatUcitele">Přidat</button>
-
-            <span>Podle jména se třídy řadí do ročníků v seznamu tříd.</span>
         </form>
     </div>
     <div id="pridat" @click="pridavani = !pridavani" :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">

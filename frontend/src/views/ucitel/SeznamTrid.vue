@@ -108,6 +108,7 @@ function pridatUcitele(e: Event) {
         }
     }).then(() => {
         pridavani.value = false
+        pridatEmail.value = ""
     }).catch(e => {
         pridatOznameni(e.response.data.error)
     })

@@ -373,15 +373,17 @@ form input[type=text]:focus, form input[type=email]:focus {
     margin-left: 230px;
 }
 
-@media screen and (max-width: 1100px) {
+@media screen and (max-width: 800px) {
     #rocniky {
         width: 420px;
     }
 }
 
-@media screen and (max-width: 600px) {
-    #rocniky {
-        width: 200px;
+@media screen and (max-width: 450px) {
+    #tridy {
+        transform: scale(0.85);
+        position: absolute;
+        top: 130px;
     }
 
     #text-prace {
@@ -392,6 +394,17 @@ form input[type=text]:focus, form input[type=email]:focus {
     #text-prace>img {
         margin-left: 20px;
         transform: rotate(8deg);
+    }
+}
+
+@media screen and (max-width: 380px) {
+    #tridy {
+        max-width: 200px;
+        top: 100px;
+    }
+
+    #rocniky {
+        width: 100%;
     }
 }
 </style>

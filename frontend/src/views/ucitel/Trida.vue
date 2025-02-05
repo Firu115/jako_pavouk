@@ -978,7 +978,7 @@ form input::placeholder {
     }
 
     .udaj2 {
-        min-width: 60px !important;
+        min-width: 80px !important;
     }
 
     .uprava-pill {
@@ -987,6 +987,7 @@ form input::placeholder {
 
     #prace-kontejner {
         width: auto;
+        gap: 10px;
     }
 
     #pulic-praci {

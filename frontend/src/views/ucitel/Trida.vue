@@ -2,7 +2,7 @@
 import axios from "axios";
 import { onMounted, ref, computed, onUnmounted, useTemplateRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
+import {getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
 import ZadaniPrace from "./ZadaniPrace.vue";
 import { useHead } from "@unhead/vue";
@@ -11,13 +11,13 @@ import NastaveniTridy from "./NastaveniTridy.vue";
 import KodTridy from "../../components/KodTridy.vue";
 import PrepinacTabu from "../../components/PrepinacTabu.vue";
 import { mobil } from "../../stores";
+import PraceBlok, { Prace, Zak } from "../../components/ucitel/PraceBlok.vue";
 
 const id = useRoute().params.id
 
-type Prace = { id: number, text: string, cas: number, datum: Date, prumerneCPM: number, prumernaPresnost: number, StudentuDokoncilo: number }
-
 const trida = ref({} as { id: number, jmeno: string, ucitelID: number, kod: string, zamknuta: boolean, klavesnice: string })
 const prace = ref([] as Prace[])
+const studentiVPraci = ref(new Map<number, Array<Zak>>())
 const studenti = ref([] as { id: number, jmeno: string, email: string, cpm: number }[])
 const vsechnyTridy = ref([] as { id: number, jmeno: string, kod: string, zamknuta: boolean, pocet_studentu: number, klavesnice: string, pocet_praci: number }[])
 
@@ -28,6 +28,8 @@ const studentOznacenej = ref({ jmeno: "...", email: "...@...", dokonceno: 0, day
 const cpmVPracich = ref(new Map<number, number>())
 const presnostVPracich = ref(new Map<number, number>())
 
+const selectnutaPraceID = ref(-1)
+
 const upravaStudenta = ref(false)
 const jmenoUprava = ref()
 
@@ -37,7 +39,6 @@ const nacitamStudenta = ref(false)
 
 const router = useRouter()
 
-const smazatPraciID = ref(0)
 const copyPraciIndex = ref(-1)
 const copyTrida = ref(0)
 
@@ -132,10 +133,8 @@ function select(id: number) {
             presnostVPracich.value.set(+key, response.data.presnostVPracich[key])
         }
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
         selectnutej.value = -1
     }).finally(() => {
         nacitamStudenta.value = false
@@ -162,10 +161,8 @@ function zmenaJmena(e: Event) {
         studentOznacenej.value.jmeno = jmenoUprava.value
         get()
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
         selectnutej.value = -1
     })
 }
@@ -187,10 +184,8 @@ function zmenaStudentTridy(e: Event) {
         get()
         selectnutej.value = -1
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
         selectnutej.value = -1
     })
 }
@@ -205,10 +200,8 @@ function prejmenovatTridu(e: Event, novyJmeno: string) {
             Authorization: `Bearer ${getToken()}`
         }
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
         trida.value.jmeno = staryJmeno
     })
 }
@@ -216,27 +209,6 @@ function prejmenovatTridu(e: Event, novyJmeno: string) {
 function zadano() {
     prepinacTabu.value!.tab = "prace"
     get()
-}
-
-function smazatPraci(prace: Prace) {
-    if (prace.StudentuDokoncilo != 0) {
-        if (!confirm(`Tuto práci už dokončilo ${prace.StudentuDokoncilo} studentů! Opravdu ji chcete smazat?`)) return
-    }
-
-    axios.delete("/skola/smazat-praci/" + prace.id, {
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    }).then(() => {
-        get()
-        pridatOznameni("Práce byla smazána.")
-        smazatPraciID.value = 0
-    }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
-    })
 }
 
 function zadatDoJineTridy() {
@@ -279,6 +251,7 @@ watch(copyPraciIndex, () => {
         dialog1.value?.showModal()
     }
 })
+
 </script>
 <template>
     <h1 class="nadpis-se-sipkou" style="margin: 0; direction: ltr;">
@@ -384,46 +357,12 @@ watch(copyPraciIndex, () => {
             <h2 v-else>Vyberte studenta!</h2>
         </div>
     </div>
-    <div v-else-if="prepinacTabu?.tab == 'prace'" id="pulic-praci">
-        <div id="prace-uprava-kontejner">
-            <div v-for="v, i in prace" :key="v.id" class="uprava-pill" :style="{ opacity: (smazatPraciID == v.id || smazatPraciID == 0) ? 1 : 0.4 }">
-                <div class="copy-btn" @click="copyPraciIndex = i">
-                    <img src="../../assets/icony/copy.svg" alt="Kopírovat práci">
-                </div>
-                <div v-if="smazatPraciID != v.id" class="smazat-btn" @click="smazatPraciID = v.id">
-                    <img src="../../assets/icony/trash.svg" alt="Smazat práci">
-                </div>
-                <div v-else class="smazat-btn" @click="smazatPraci(v)" @mouseleave="smazatPraciID = 0">
-                    <img src="../../assets/icony/right.svg" alt="Smazat práci">
-                </div>
-            </div>
+    <div id="prace-kontejner" v-if="prepinacTabu?.tab == 'prace'">
+        <div v-if="prace.length == 0" id="text-prace">
+            <span>Zatím nejsou žádné zadané práce. <br>První vytvoříte pomocí tohoto tlačítka.</span>
+            <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
         </div>
-        <div id="prace-kontejner">
-            <div v-for="v, i in prace" :key="i" class="prace">
-                <Tooltip :zprava="`<b>${v.cas / 60} min</b> | ${v.text.slice(0, 100)}...`" :sirka="300" :vzdalenost="3">
-                    <div class="nadpis-prace">
-                        <h2>Práce {{ prace.length - i }}</h2>
-                        <h3>{{ v.datum.toLocaleDateString("cs-CZ") }}</h3>
-                    </div>
-                </Tooltip>
-
-                <div class="statistika">
-                    <Tooltip v-if="v.prumerneCPM != -1" zprava="Průměrná rychlost studentů" :sirka="160" :vzdalenost="5">
-                        <span><b>{{ naJednoDesetiny(v.prumerneCPM) }}</b> CPM</span>
-                    </Tooltip>
-                    <Tooltip v-if="v.prumernaPresnost != -1" zprava="Průměrná přesnost studentů" :sirka="160" :vzdalenost="5">
-                        <span><b>{{ naJednoDesetiny(v.prumernaPresnost) }}</b> %</span>
-                    </Tooltip>
-                    <Tooltip zprava="Studentů kteří mají hotovo" :sirka="160" :vzdalenost="5">
-                        <span class="udaj2"><b>{{ v.StudentuDokoncilo }}</b>/<b>{{ studenti.length }}</b></span>
-                    </Tooltip>
-                </div>
-            </div>
-            <div v-if="prace.length == 0" id="text-prace">
-                <span>Zatím nejsou žádné zadané práce. <br>První vytvoříte pomocí tohoto tlačítka.</span>
-                <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
-            </div>
-        </div>
+        <PraceBlok v-for="v, i in prace" :key="i" :prace="v" :selectnutaPraceID :studentiVPraci @unselect="selectnutaPraceID = -1" @select="selectnutaPraceID = v.id" @reload="get" @copy="copyPraciIndex = i" :cisloPrace="prace.length - i" :pocetStudentu="studenti.length"/>
     </div>
     <ZadaniPrace v-else-if="prepinacTabu?.tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="posledniRychlostPrace" />
     <NastaveniTridy v-else-if="prepinacTabu?.tab == 'nastaveni'" ref="nastaveni" :trida="trida"
@@ -450,36 +389,6 @@ watch(copyPraciIndex, () => {
     </div>
 </template>
 <style scoped>
-.uprava-pill {
-    height: 60px;
-    width: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    transition: 0.2s;
-}
-
-.smazat-btn,
-.copy-btn {
-    width: 100%;
-    padding: 5px;
-    height: 28px;
-    cursor: pointer;
-    border-radius: 6px;
-    background-color: var(--tmave-fialova);
-    transition: 0.15s;
-}
-
-.smazat-btn:hover,
-.copy-btn:hover {
-    background-color: var(--fialova);
-}
-
-.copy-btn>img,
-.smazat-btn>img {
-    position: relative;
-}
-
 dialog {
     width: 320px;
     height: 160px;
@@ -511,43 +420,11 @@ dialog {
     height: 34px;
 }
 
-#prace-uprava-kontejner {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
 #pulic-praci {
     display: flex;
     justify-content: space-between;
-    width: 550px;
+    width: 580px;
     gap: 8px;
-}
-
-.udaj2 {
-    font-size: 26px !important;
-}
-
-.statistika span b {
-    font-family: "Red Hat Mono";
-    font-size: 29px;
-}
-
-.statistika span {
-    font-size: 19px;
-    display: flex;
-    align-items: baseline;
-    gap: 5px;
-    justify-content: end;
-    height: 34px;
-    position: relative;
-    top: -2px;
-
-    min-width: 115px;
-}
-
-.statistika {
-    display: flex;
 }
 
 .udaje {
@@ -675,25 +552,7 @@ form input::placeholder {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    width: 100%;
-}
-
-.prace {
-    background-color: var(--tmave-fialova);
-    border-radius: 10px;
-    padding: 6px 12px;
-    transition: 0.1s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 100%;
-    height: 60px;
-}
-
-.nadpis-prace {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
+    width: 590px;
 }
 
 .nadpis-prace h2 {
@@ -960,29 +819,6 @@ form input::placeholder {
 
     .nadpis-prace h3 {
         font-size: 14px;
-    }
-
-    .prace {
-        height: 48px;
-        width: 400px;
-        padding: 8px;
-    }
-
-    .statistika *:not(#tooltip) {
-        font-size: 21px !important;
-        height: 22px !important;
-    }
-
-    .statistika span {
-        min-width: 90px;
-    }
-
-    .udaj2 {
-        min-width: 80px !important;
-    }
-
-    .uprava-pill {
-        display: none;
     }
 
     #prace-kontejner {

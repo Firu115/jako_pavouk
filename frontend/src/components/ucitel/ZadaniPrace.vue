@@ -439,4 +439,11 @@ select option:disabled {
     border: 1px solid rgb(206, 206, 206);
     align-self: center;
 }
+
+@media screen and (max-width: 900px) {
+    #pulic-zadani {
+        flex-direction: column;
+        width: auto;
+    }
+}
 </style>

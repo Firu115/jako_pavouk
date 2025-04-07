@@ -3,6 +3,7 @@ import axios from "axios";
 import { getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import { PropType, ref } from "vue";
 import Tooltip from "../../components/Tooltip.vue";
+import { mobil } from "../../stores";
 
 export type Prace = { id: number, text: string, cas: number, datum: Date, prumerneCPM: number, prumernaPresnost: number, StudentuDokoncilo: number }
 export type Zak = { id: number, jmeno: string, email: string, cpm: number, presnost: number }
@@ -64,7 +65,8 @@ function selectPraci(id: number) {
 
 </script>
 <template>
-    <div class="jedna-prace" :style="{ maxHeight: selectnutaPraceID !== prace.id ? '60px' : `${60 + 10 + 20 + (37.5 + 5) * pocetStudentu || 0}px`, marginBottom: selectnutaPraceID === prace.id ? '15px' : 0 }">
+    <div class="jedna-prace"
+        :style="{ maxHeight: selectnutaPraceID !== prace.id ? (mobil ? '48px' : '60px') : `${60 + 10 + 20 + (37.5 + 5) * pocetStudentu || 0}px`, marginBottom: selectnutaPraceID === prace.id ? '15px' : 0 }">
         <div class="radek">
             <div id="prace-uprava-kontejner">
                 <div class="uprava-pill" :style="{ opacity: (smazatPraciID == prace.id || smazatPraciID == 0) ? 1 : 0.4 }">
@@ -96,7 +98,7 @@ function selectPraci(id: number) {
                     </Tooltip>
                     <Tooltip zprava="Studentů kteří mají hotovo" :sirka="160" :vzdalenost="5">
                         <span class="udaj2" :style="{ 'min-width': pocetStudentu > 10 ? '115px' : '80px' }"><b>{{ prace.StudentuDokoncilo
-                                }}</b>/<b>{{ pocetStudentu }}</b></span>
+                        }}</b>/<b>{{ pocetStudentu }}</b></span>
                     </Tooltip>
                 </div>
             </div>
@@ -267,6 +269,10 @@ function selectPraci(id: number) {
         padding: 8px;
     }
 
+    .jedna-prace {
+        max-height: 48px;
+    }
+
     .statistika *:not(#tooltip) {
         font-size: 21px !important;
         height: 22px !important;
@@ -274,6 +280,30 @@ function selectPraci(id: number) {
 
     .statistika span {
         min-width: 90px;
+    }
+
+    .nadpis-prace h2 {
+        font-size: 18px;
+    }
+
+    .nadpis-prace h3 {
+        font-size: 14px;
+    }
+
+    .zaci-v-praci {
+        width: 85%;
+    }
+
+    .statistika-zaka span b {
+        font-size: 18px;
+    }
+
+    .statistika-zaka span {
+        min-width: 80px;
+    }
+
+    .radek {
+        gap: 0;
     }
 }
 </style>

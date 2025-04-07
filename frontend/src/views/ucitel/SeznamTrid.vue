@@ -214,6 +214,10 @@ function pridatUcitele(e: Event) {
     </div>
 </template>
 <style scoped>
+h1 {
+    max-width: 90%;
+}
+
 .tlacitko {
     width: 100px;
     align-self: center;
@@ -400,7 +404,7 @@ form input[type=text]:focus, form input[type=email]:focus {
 @media screen and (max-width: 380px) {
     #tridy {
         max-width: 200px;
-        top: 100px;
+        top: 130px;
     }
 
     #rocniky {

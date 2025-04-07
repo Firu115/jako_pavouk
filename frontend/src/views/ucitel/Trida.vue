@@ -4,10 +4,10 @@ import { onMounted, ref, computed, onUnmounted, useTemplateRef, watch } from "vu
 import { useRoute, useRouter } from "vue-router";
 import {getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
-import ZadaniPrace from "./ZadaniPrace.vue";
+import ZadaniPrace from "../../components/ucitel/ZadaniPrace.vue";
 import { useHead } from "@unhead/vue";
 import Tooltip from "../../components/Tooltip.vue";
-import NastaveniTridy from "./NastaveniTridy.vue";
+import NastaveniTridy from "../../components/ucitel/NastaveniTridy.vue";
 import KodTridy from "../../components/KodTridy.vue";
 import PrepinacTabu from "../../components/PrepinacTabu.vue";
 import { mobil } from "../../stores";
@@ -449,13 +449,6 @@ dialog {
     height: 34px;
 }
 
-#pulic-praci {
-    display: flex;
-    justify-content: space-between;
-    width: 580px;
-    gap: 8px;
-}
-
 .udaje {
     display: flex;
     flex-direction: column;
@@ -853,11 +846,6 @@ form input::placeholder {
     #prace-kontejner {
         width: auto;
         gap: 10px;
-    }
-
-    #pulic-praci {
-        width: auto;
-        gap: 0;
     }
 
     .blok {

@@ -59,31 +59,7 @@ function selectPraci(id: number) {
     }
     if (props.pocetStudentu === 0) return
 
-    axios.get("/skola/get-statistiky-prace/" + id, {
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    }).then(response => {
-        const s: Array<Zak> = response.data.studenti
-        s.sort((a: Zak, b: Zak) => {
-            if (a.cpm === -1 && b.cpm !== -1) return 1
-            if (a.cpm !== -1 && b.cpm === -1) return -1
-            if ((a.cpm === -1 && b.cpm === -1) || (a.cpm !== -1 && b.cpm !== -1)) {
-                if (a.jmeno < b.jmeno) {
-                    return -1
-                }
-                if (a.jmeno > b.jmeno) {
-                    return 1
-                }
-            }
-            return 0
-        })
-        props.studentiVPraci.set(id, s)
-        emit("select")
-    }).catch(() => {
-        pridatOznameni("Chyba serveru")
-        emit("unselect")
-    })
+    emit("reload")
 }
 
 </script>
@@ -207,7 +183,7 @@ function selectPraci(id: number) {
     overflow: hidden;
     max-height: 60px;
 
-    transition: max-height 0.5s, margin-bottom 0.5s;
+    transition: max-height 0.3s, margin-bottom 0.3s;
 }
 
 .prace {

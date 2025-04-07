@@ -57,6 +57,7 @@ onMounted(() => {
 
     source.onmessage = function () {
         get()
+        getVysledkyStudentuVPraci(selectnutaPraceID.value)
     }
 })
 
@@ -252,6 +253,34 @@ watch(copyPraciIndex, () => {
     }
 })
 
+function getVysledkyStudentuVPraci(id: number) {
+    axios.get("/skola/get-statistiky-prace/" + id, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    }).then(response => {
+        const s: Array<Zak> = response.data.studenti
+        s.sort((a: Zak, b: Zak) => {
+            if (a.cpm === -1 && b.cpm !== -1) return 1
+            if (a.cpm !== -1 && b.cpm === -1) return -1
+            if ((a.cpm === -1 && b.cpm === -1) || (a.cpm !== -1 && b.cpm !== -1)) {
+                if (a.jmeno < b.jmeno) {
+                    return -1
+                }
+                if (a.jmeno > b.jmeno) {
+                    return 1
+                }
+            }
+            return 0
+        })
+        studentiVPraci.value.set(id, s)
+        selectnutaPraceID.value = id
+    }).catch(() => {
+        pridatOznameni("Chyba serveru")
+        selectnutaPraceID.value = -1
+    })
+}
+
 </script>
 <template>
     <h1 class="nadpis-se-sipkou" style="margin: 0; direction: ltr;">
@@ -362,7 +391,7 @@ watch(copyPraciIndex, () => {
             <span>Zatím nejsou žádné zadané práce. <br>První vytvoříte pomocí tohoto tlačítka.</span>
             <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
         </div>
-        <PraceBlok v-for="v, i in prace" :key="i" :prace="v" :selectnutaPraceID :studentiVPraci @unselect="selectnutaPraceID = -1" @select="selectnutaPraceID = v.id" @reload="get" @copy="copyPraciIndex = i" :cisloPrace="prace.length - i" :pocetStudentu="studenti.length"/>
+        <PraceBlok v-for="v, i in prace" :key="i" :prace="v" :selectnutaPraceID :studentiVPraci @unselect="selectnutaPraceID = -1" @select="selectnutaPraceID = v.id" @reload="() => {get();getVysledkyStudentuVPraci(v.id)}" @copy="copyPraciIndex = i" :cisloPrace="prace.length - i" :pocetStudentu="studenti.length"/>
     </div>
     <ZadaniPrace v-else-if="prepinacTabu?.tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="posledniRychlostPrace" />
     <NastaveniTridy v-else-if="prepinacTabu?.tab == 'nastaveni'" ref="nastaveni" :trida="trida"

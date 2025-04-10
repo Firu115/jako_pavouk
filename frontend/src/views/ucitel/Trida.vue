@@ -49,7 +49,7 @@ let source: EventSource | null = null
 onMounted(() => {
     get()
 
-    if (window.location.hostname == "jakopavouk.cz") {
+    if (window.location.hostname == "jakopavouk.cz" || window.location.hostname == "test.jakopavouk.cz") {
         source = new EventSource("/api/skola/zaci-stream/" + id)
     } else {
         source = new EventSource("http://127.0.0.1:1323/api/skola/zaci-stream/" + id)
@@ -307,9 +307,10 @@ function getVysledkyStudentuVPraci(id: number) {
                     <li>Sdělte žákům tento 4-místný kód</li>
                     <li>Žáci se zapíšou:
                         <ul>
-                            <li>V záložce "Domů"</li>
-                            <li>Uplně dole</li>
+                            <li>V nastavení účtu (ozubené kolečko vlevo dole)</li>
                             <li>Tlačítkem "Zapsat se"</li>
+                            <li>Napíšou kód této třídy</li>
+                            <li>Zadají svoje "Školní jméno", podle kterého je zde potom uvidíte</li>
                         </ul>
                     </li>
                 </ol>
@@ -436,6 +437,7 @@ dialog {
 
 #copy-menu>select {
     min-width: 230px;
+    max-width: 100%;
 }
 
 #copy-menu>div {
@@ -540,6 +542,7 @@ form input::placeholder {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    max-width: 300px;
 }
 
 #text-zaci ul {

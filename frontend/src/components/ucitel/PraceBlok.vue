@@ -81,7 +81,7 @@ function selectPraci(id: number) {
                     </div>
                 </div>
             </div>
-            <div class="prace" @click="selectPraci(prace.id)">
+            <div class="prace" :class="{ nekliknutelna: pocetStudentu == 0 }" @click="selectPraci(prace.id)">
                 <Tooltip :zprava="`<b>${prace.cas / 60} min</b> | ${prace.text.slice(0, 100)}...`" :sirka="300" :vzdalenost="3">
                     <div class="nadpis-prace">
                         <h2>Práce {{ cisloPrace }}</h2>
@@ -103,7 +103,7 @@ function selectPraci(id: number) {
                 </div>
             </div>
         </div>
-        <div v-if="studentiVPraci.get(prace.id) !== undefined" class="zaci-v-praci">
+        <div class="zaci-v-praci">
             <div v-for="zak in studentiVPraci.get(prace.id)" :key="zak.id" class="zak-v-praci">
                 <span>{{ zak.jmeno }}</span>
                 <div v-if="zak.cpm !== -1" class="statistika-zaka">
@@ -199,13 +199,13 @@ function selectPraci(id: number) {
     align-items: center;
     max-width: 100%;
     height: 60px;
-    cursor: pointer;
 
     transition: background-color 0.15s;
 }
 
-.prace:hover {
+.prace:not(.nekliknutelna):hover {
     background-color: var(--fialova);
+    cursor: pointer;
 }
 
 .nadpis-prace {

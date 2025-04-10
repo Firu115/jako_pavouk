@@ -56,7 +56,7 @@ function get() {
             rocniky.value.forEach(r => {
                 r.forEach(t => {
                     let s: EventSource
-                    if (window.location.hostname == "jakopavouk.cz") {
+                    if (window.location.hostname == "jakopavouk.cz" || window.location.hostname == "test.jakopavouk.cz") {
                         s = new EventSource("/api/skola/zaci-stream/" + t.id)
                     } else {
                         s = new EventSource("http://127.0.0.1:1323/api/skola/zaci-stream/" + t.id)

@@ -1,45 +1,78 @@
 <script setup lang="ts">
-import { ref, watch } from "vue"
+import { computed, nextTick, onMounted, ref, watch } from "vue"
 
 const text = ref("")
 const vyska = "calc(100vh - 60px - 40px - 25px - 30px - 40px - 11px)"
 
-const textarea = ref<HTMLElement | null>(null)
+const textarea = ref<HTMLTextAreaElement | null>(null)
 const div = ref<HTMLElement>()
-const sus = ref("")
+const highlightText = ref("")
 
-const lineBreak = new RegExp(/(\r\n|\r|\n)/g)
-const red = new RegExp(/([^A-Za-z0-9ěščřžýáíéůúťďňóĚŠČŘŽÝÁÍÉŮÚŤĎŇÓ ,.!?;:_=+\-*/%()[\]{}<>"'@&|\r\n]+)/g)
-const orange = new RegExp(/(([_=+\-*%()[\]{}"'@&|]+)|(?<!\/?mark)([<>])(?!\/?mark))|(\/)(?!mark>)/g)
-const mezeraNaZacatku = new RegExp(/(^ )/g)
-const viceMezer = new RegExp(/( {2,})/g)
-//const htmlEscape = new RegExp(/(&[^ ]{2,5}?;)/g) //TODO nefunguje dobře pokud &&&&&;
+const isComposing = ref(false)
+
+const lineBreak = /(\r\n|\r|\n)/g
+const red = /([^A-Za-z0-9ěščřžýáíéůúťďňóĚŠČŘŽÝÁÍÉŮÚŤĎŇÓ ,.!?;:_=+\-*/%#$~§()[\]{}<>"'@&|\r\n\\]+)/g
+const orange = /(([_=+\-*%()[\]{}"'@&|#$~§\\]+)|(?<!\/?mark)([<>])(?!\/?mark))|(\/)(?!mark>)/g
+const mezeraNaZacatku = /(^ )/g
+const viceMezer = /( {2,})/g
 
 function scrollDiv() {
-    div.value?.scrollTo(0, textarea.value!.scrollTop)
+    div.value?.scrollTo(0, textarea.value?.scrollTop ?? 0)
 }
 
-watch(text, () => {
-    let t: string = text.value
-    text.value = text.value.replace(lineBreak, "")
+function updateHighlighting(fromInput = false) {
+    const val = textarea.value?.value ?? ""
+    if (!fromInput) text.value = val.replace(lineBreak, "") // clean breaks if not from input
 
-    t = text.value.replace(red, `<mark>$&</mark>`)
+    let t = val.replace(red, `<mark>$&</mark>`)
     t = t.replace(orange, "<mark2>$&</mark2>")
     t = t.replace(lineBreak, "<mark>↵\n</mark>")
     t = t.replace(viceMezer, "<mark>$&</mark>")
     t = t.replace(mezeraNaZacatku, "<mark>$&</mark>")
 
+    highlightText.value = t
+}
 
-    console.log(t, text.value)
-    sus.value = t
+function onInput(e: Event) {
+    const val = (e.target as HTMLTextAreaElement).value
+    text.value = val
+    updateHighlighting(true) // Update highlights on input
+}
+
+function onCompositionStart() {
+    isComposing.value = true
+}
+
+function onCompositionUpdate() {
+    // If composing, update highlights as you type composed characters
+    updateHighlighting(true)
+}
+
+function onCompositionEnd() {
+    isComposing.value = false
+    updateHighlighting(true) // Re-apply final highlight after composition ends
+}
+
+onMounted(() => {
+    updateHighlighting() // Initial highlight setup
 })
 
-defineExpose({ text })
+watch(text, () => {
+    nextTick(() => {
+        updateHighlighting(true)
+    })
+})
+
+const ready = computed(() => !text.value.match(red))
+
+defineExpose({ text, ready })
 // krejzy https://codersblock.com/blog/highlight-text-inside-a-textarea/
 </script>
+
 <template>
-    <div ref="div" v-html="sus"></div>
-    <textarea ref="textarea" placeholder="Text, který budou žáci psát..." v-model="text" @scroll="scrollDiv" />
+    <div ref="div" v-html="highlightText"></div>
+    <textarea ref="textarea" placeholder="Text, který budou žáci psát..." v-model="text" @scroll="scrollDiv" @compositionstart="onCompositionStart"
+        @input="onInput" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd" />
 </template>
 <style scoped>
 div {

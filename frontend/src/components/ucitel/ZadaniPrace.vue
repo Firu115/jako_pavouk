@@ -69,6 +69,11 @@ function pridatPraci() {
         return
     }
 
+    if (!textovePole.value!.ready) {
+        pridatOznameni("Text obsahuje červeně označené znaky, které nelze jednoduše napsat na české klávesnici.")
+        return
+    }
+
     axios.post("/skola/pridat-praci", {
         "cas": delka.value,
         "trida_id": props.tridaID,

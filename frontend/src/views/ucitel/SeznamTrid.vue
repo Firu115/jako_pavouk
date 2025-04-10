@@ -46,12 +46,18 @@ function get() {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(response => {
+        if (response.data.skola == undefined) {
+            pridatOznameni("Něco se pokazilo")
+            router.push("/")
+            return
+        }
         skola.value = response.data.skola
 
         Object.keys(response.data.tridy).forEach(key => {
             rocniky.value.set(key, response.data.tridy[key].sort((a: { jmeno: string }, b: { jmeno: string }) => a.jmeno.localeCompare(b.jmeno)))
         })
 
+        sources.splice(0, sources.length - 1)
         if (sources.length == 0) {
             rocniky.value.forEach(r => {
                 r.forEach(t => {

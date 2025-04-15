@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import axios from 'axios';
-import { getToken, pridatOznameni } from '../utils';
+import { getToken, pridatOznameni } from '../../utils';
 import { onMounted, ref, useTemplateRef } from 'vue';
+import { role, uziv } from '../../stores';
+import { useRouter } from 'vue-router';
 
+const router = useRouter()
 const ucitele = ref([] as { email: string, pocet_trid: number, pocet_zaku: number }[])
 const email = ref("")
 onMounted(get)
@@ -43,6 +46,11 @@ function smazatUcitele(e: Event) {
             Authorization: `Bearer ${getToken()}`
         }
     }).then(() => {
+        if (email.value === uziv.value.email) {
+            router.push("/")
+            role.value = "basic"
+            return
+        }
         get()
     }).catch(e => {
         console.log(e)
@@ -69,14 +77,15 @@ function smazatUcitele(e: Event) {
                 </div>
             </div>
             <button @click="otevritDialog" :data-email="ucitel.email">
-                <img src="../assets/icony/trash.svg" alt="Smazat">
+                <img src="../../assets/icony/trash.svg" alt="Smazat">
             </button>
         </div>
     </div>
 
     <dialog ref="dialog1">
         <div id="dialog-kontejner">
-            <h2>Opravdu chcete odstranit tohoto učitele?</h2>
+            <h2 v-if="email == uziv.email">Opravdu chcete odstranit sebe sama?</h2>
+            <h2 v-else>Opravdu chcete odstranit tohoto učitele?</h2>
             <h3>{{ email }}</h3>
             <div>
                 <button class="cervene-tlacitko" @click="smazatUcitele">Odstranit</button>

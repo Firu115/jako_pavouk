@@ -6,7 +6,7 @@ import { moznostiRocnik, moznostiTrida, moznostiSkupina, prihlasen } from "../..
 import { useHead } from "@unhead/vue";
 import { useRouter } from "vue-router";
 import PrepinacTabu from "../../components/PrepinacTabu.vue";
-import SeznamUcitelu from "../../components/SeznamUcitelu.vue";
+import SeznamUcitelu from "../../components/ucitel/SeznamUcitelu.vue";
 
 const router = useRouter()
 

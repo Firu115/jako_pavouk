@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { checkTeapot, getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
+import { getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import { computed, onMounted, ref } from "vue";
 import { useHead } from "unhead";
 import { mobil, role } from "../../stores";
@@ -48,8 +48,7 @@ function get() {
             if (prace1.cpm != -1) praceDoko.value.push(p)
             else praceNove.value.push(p)
         }
-    }).catch(e => {
-        if (checkTeapot(e)) return
+    }).catch(() => {
         pridatOznameni("Chyba serveru")
         router.back()
         role.value = "basic"

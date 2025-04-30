@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
-import { checkTeapot, getToken, MojeMapa, pridatOznameni } from "../../utils";
+import { getToken, MojeMapa, pridatOznameni } from "../../utils";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import Vysledek from "../../components/Vysledek.vue";
@@ -55,10 +55,9 @@ function get() {
             prodlouzit()
         }
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            pridatOznameni()
-            router.back()
-        }
+        console.log(e)
+        pridatOznameni()
+        router.back()
     }).finally(() => {
         nacitamNovej.value = false
     })

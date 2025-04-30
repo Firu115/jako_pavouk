@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, PropType, ref, computed, useTemplateRef } from "vue";
-import { checkTeapot, getToken, pridatOznameni } from "../../utils";
+import { getToken, pridatOznameni } from "../../utils";
 import { moznostiRocnik, moznostiTrida, moznostiSkupina } from "../../stores";
 import axios from "axios";
 import { useRouter } from "vue-router";
@@ -66,10 +66,8 @@ function postSmazat(e: Event) {
         router.push("/skola")
         pridatOznameni(`Třída "${props.trida.jmeno}", byla smazána.`)
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
     })
 }
 

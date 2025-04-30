@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { checkTeapot, getToken, pridatOznameni } from "../../utils";
+import { getToken, pridatOznameni } from "../../utils";
 import axios from "axios";
 import { prihlasen, role } from "../../stores";
 
@@ -45,10 +45,8 @@ function potvrditKod(e: Event) {
             pridatOznameni("Tato třída je zamčená")
             return
         }
-        if (!checkTeapot(e)) {
-            console.log(e)
-            pridatOznameni("Chyba serveru")
-        }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
     })
 }
 
@@ -66,20 +64,16 @@ function zapsatSe(e: Event) {
         router.push("/trida")
         role.value = "student"
     }).catch(e => {
-        if (!checkTeapot(e)) {
-            if (e.response.data.error == "Uz jsi ve tride") {
-                pridatOznameni("Už jsi ve třídě")
-                return
-            }
-            if (e.response.data.error == "jako ucitel nemuzete byt ve tride") {
-                pridatOznameni("Jako učitel/ka se nemůžete připojit do žádné třídy")
-                return
-            }
-            if (!checkTeapot(e)) {
-                console.log(e)
-                pridatOznameni("Chyba serveru")
-            }
+        if (e.response.data.error == "Uz jsi ve tride") {
+            pridatOznameni("Už jsi ve třídě")
+            return
         }
+        if (e.response.data.error == "jako ucitel nemuzete byt ve tride") {
+            pridatOznameni("Jako učitel/ka se nemůžete připojit do žádné třídy")
+            return
+        }
+        console.log(e)
+        pridatOznameni("Chyba serveru")
     })
 }
 
@@ -185,13 +179,15 @@ form input::placeholder {
     #kontejner>img {
         display: none;
     }
+
     #kontejner {
         padding: 20px 25px;
         width: auto;
         margin: 0 30px;
     }
+
     h1 {
-        max-width:60vw;
+        max-width: 60vw;
     }
 }
 </style>

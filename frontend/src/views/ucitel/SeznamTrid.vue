@@ -74,6 +74,10 @@ function get() {
                 })
             })
         }
+
+        if (!skola.value.aktivni) {
+            pridatOznameni("Vaše škola nemá platnou licenci a školní systém se brzy uzamkne. Pro více informací pište na e-mail: firu@jakopavouk.cz.", 15000)
+        }
     }).catch(e => {
         pridatOznameni("Chyba serveru")
         if (e.response === undefined) router.push("/")

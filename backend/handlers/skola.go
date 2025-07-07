@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"backend/databaze"
@@ -10,59 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/labstack/echo/v4"
-)
-
-type (
-	bodyCreateTrida struct {
-		Jmeno string `json:"jmeno" validate:"required,min=1,max=30"`
-	}
-	bodyZmenaTridy struct {
-		TridaID uint   `json:"trida_id" validate:"required"`
-		Zmena   string `json:"zmena"`
-		Hodnota string `json:"hodnota"`
-	}
-	bodyZmenaJmenaStudenta struct {
-		ID      uint   `json:"id" validate:"required"`
-		Jmeno   string `json:"jmeno" validate:"max=30"`
-		TridaID int    `json:"trida_id"`
-	}
-	bodyZapis struct {
-		Kod   string `json:"kod" validate:"required"`
-		Jmeno string `json:"jmeno" validate:"required,min=1,max=30"`
-	}
-	bodyPridatPraci struct {
-		Text    string `json:"text" validate:"required,min=1"`
-		Cas     int    `json:"cas" validate:"required"`
-		TridaID uint   `json:"trida_id" validate:"required"`
-	}
-	bodyGetText struct {
-		TridaID uint    `json:"trida_id"`
-		Typ     string  `json:"typ" validate:"required"`
-		ZLekce  string  `json:"z_lekce"`
-		Delka   float32 `json:"delka"`
-	}
-	bodyZapisSkoly struct {
-		JmenoSkoly       string `json:"jmeno_skoly"`
-		KontaktniEmail   string `json:"kontaktni_email" validate:"email"`
-		KontaktniTelefon string `json:"kontaktni_telefon"`
-	}
-	bodyUpravaUcitele struct {
-		Akce  string `json:"akce" validate:"oneof='smazat' 'pridat'"`
-		Email string `json:"email" validate:"required_if=Akce 'pridat',email"`
-	}
-
-	praceProStudenta struct {
-		ID       uint      `json:"id"`
-		TridaID  uint      `json:"-"`
-		Text     string    `json:"-"`
-		Cas      int       `json:"cas"`
-		Datum    time.Time `json:"datum"`
-		Cpm      float64   `json:"cpm"`
-		Presnost float64   `json:"presnost"`
-	}
 )
 
 // typy uživatelů
@@ -689,28 +638,28 @@ func getText(c echo.Context) error {
 
 	var text string = ""
 	if body.Typ == "1" {
-		textPole, err := generovatTextCviceni(body.ZLekce, "nova", 0, body.TridaID, body.Delka+5)
+		textPole, err := utils.GenerovatTextCviceni(body.ZLekce, "nova", 0, body.TridaID, body.Delka+5)
 		if err != nil {
 			log.Println(err)
 			return c.JSON(http.StatusInternalServerError, chyba(""))
 		}
 		text = strings.Join(textPole, "")
 	} else if body.Typ == "2" {
-		textPole, err := generovatTextCviceni(body.ZLekce, "naucena", 0, body.TridaID, body.Delka+5)
+		textPole, err := utils.GenerovatTextCviceni(body.ZLekce, "naucena", 0, body.TridaID, body.Delka+5)
 		if err != nil {
 			log.Println(err)
 			return c.JSON(http.StatusInternalServerError, chyba(""))
 		}
 		text = strings.Join(textPole, "")
 	} else if body.Typ == "3" {
-		textPole, err := generovatTextCviceni(body.ZLekce, "slova", 0, body.TridaID, body.Delka+5)
+		textPole, err := utils.GenerovatTextCviceni(body.ZLekce, "slova", 0, body.TridaID, body.Delka+5)
 		if err != nil {
 			log.Println(err)
 			return c.JSON(http.StatusInternalServerError, chyba(""))
 		}
 		text = strings.Join(textPole, "")
 	} else if body.Typ == "4" {
-		textPole, err := generovatTextCviceni(body.ZLekce, "programator", 0, body.TridaID, body.Delka+5)
+		textPole, err := utils.GenerovatTextCviceni(body.ZLekce, "programator", 0, body.TridaID, body.Delka+5)
 		if err != nil {
 			log.Println(err)
 			return c.JSON(http.StatusInternalServerError, chyba(""))
@@ -718,7 +667,7 @@ func getText(c echo.Context) error {
 		text = strings.Join(textPole, "")
 	} else if body.Typ == "Věty z pohádek" {
 		var textBuilder strings.Builder
-		vety, err := databaze.GetVsechnyVety(int(pocetZnaku / 85)) // cca 85 znaku na vetu
+		vety, err := databaze.GetVsechnyVety(int(PocetZnaku / 85)) // cca 85 znaku na vetu
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, chyba(err.Error()))
 		}

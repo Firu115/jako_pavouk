@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import axios from "axios";
 import { onMounted, onUnmounted, ref, useTemplateRef } from "vue";
-import { getToken, pridatOznameni } from "../../utils";
+import { getToken, pridatOznameni, oznameni } from "../../utils";
 import { moznostiRocnik, moznostiTrida, moznostiSkupina, prihlasen } from "../../stores";
 import { useHead } from "@unhead/vue";
 import { useRouter } from "vue-router";
@@ -10,7 +10,7 @@ import SeznamUcitelu from "../../components/ucitel/SeznamUcitelu.vue";
 
 const router = useRouter()
 
-const skola = ref({} as {jmeno: string, id: number, aktivni: boolean})
+const skola = ref({} as { jmeno: string, id: number, aktivni: boolean })
 type Trida = { id: number, jmeno: string, ucitel_id: number, kod: string, zamknuta: boolean, pocet_studentu: number, pocet_praci: number }
 const rocniky = ref(new Map<string, Trida[]>())
 const pridavani = ref(false)
@@ -75,7 +75,7 @@ function get() {
             })
         }
 
-        if (!skola.value.aktivni) {
+        if (!skola.value.aktivni && oznameni.value.length == 0) {
             pridatOznameni("Vaše škola nemá platnou licenci a školní systém se brzy uzamkne. Pro více informací pište na e-mail: firu@jakopavouk.cz.", 15000)
         }
     }).catch(e => {
@@ -127,7 +127,8 @@ function pridatUcitele(e: Event) {
 </script>
 <template>
     <h1 style="margin: 0;">{{ skola.jmeno ? skola.jmeno : "Škola" }}</h1>
-    <PrepinacTabu v-show="!pridavani" :taby="[['tridy', 'Moje Třídy'], ['ucitele', 'Učitelé']]" default-tab="tridy" sirka="120px" ref="prepinac-tabu" />
+    <PrepinacTabu v-show="!pridavani" :taby="[['tridy', 'Moje Třídy'], ['ucitele', 'Učitelé']]" default-tab="tridy"
+        sirka="120px" ref="prepinac-tabu" />
 
     <div id="tridy" v-if="prepinacTabu?.tab === 'tridy'">
         <div id="rocniky" v-if="!pridavani && rocniky.size !== 0">
@@ -142,10 +143,12 @@ function pridatUcitele(e: Event) {
                         <div style="display: flex; justify-content: space-around;">
                             <div class="statistiky">
                                 <span v-if="t.pocet_studentu == 1"><b>{{ t.pocet_studentu }}</b> student</span>
-                                <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu }}</b> studenti</span>
+                                <span v-else-if="t.pocet_studentu >= 2 && t.pocet_studentu <= 4"><b>{{ t.pocet_studentu
+                                }}</b> studenti</span>
                                 <span v-else><b>{{ t.pocet_studentu }}</b> studentů</span>
 
-                                <span v-if="t.pocet_praci == 0 || t.pocet_praci > 4"><b>{{ t.pocet_praci }}</b> prací</span>
+                                <span v-if="t.pocet_praci == 0 || t.pocet_praci > 4"><b>{{ t.pocet_praci }}</b>
+                                    prací</span>
                                 <span v-else><b>{{ t.pocet_praci }}</b> práce</span>
                             </div>
 
@@ -194,7 +197,8 @@ function pridatUcitele(e: Event) {
         <div v-else-if="rocniky.size === 0 && nacitam">
             Načítám...
         </div>
-        <div v-else style="background-color: var(--tmave-fialova); padding: 20px; border-radius: 10px; max-width: 450px; margin: 0 5vw;">
+        <div v-else
+            style="background-color: var(--tmave-fialova); padding: 20px; border-radius: 10px; max-width: 450px; margin: 0 5vw;">
             <h2 style="font-size: 21px;">Vítejte v rozhraní pro učitele!</h2>
             <br>
             Zde se vám budou třídy řadit do ročníků.
@@ -219,7 +223,8 @@ function pridatUcitele(e: Event) {
             <button class="tlacitko" @click="pridatUcitele">Přidat</button>
         </form>
     </div>
-    <div id="pridat" @click="pridavani = !pridavani" :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">
+    <div id="pridat" @click="pridavani = !pridavani"
+        :style="{ transform: pridavani ? 'rotate(-45deg)' : 'rotate(0deg)' }">
         <img src="../../assets/icony/plus.svg" alt="Přidat">
     </div>
 </template>
@@ -271,7 +276,8 @@ form span:last-of-type {
     margin-bottom: 0;
 }
 
-form input[type=text], form input[type=email] {
+form input[type=text],
+form input[type=email] {
     width: 73%;
     height: 36px;
     background-color: var(--fialova);
@@ -284,7 +290,8 @@ form input[type=text], form input[type=email] {
     font-size: 20px;
 }
 
-form input[type=text]:focus, form input[type=email]:focus {
+form input[type=text]:focus,
+form input[type=email]:focus {
     width: 75%;
 }
 

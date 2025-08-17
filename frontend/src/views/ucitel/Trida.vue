@@ -2,7 +2,7 @@
 import axios from "axios";
 import { onMounted, ref, computed, onUnmounted, useTemplateRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import {getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
+import { getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import SipkaZpet from "../../components/SipkaZpet.vue";
 import ZadaniPrace from "../../components/ucitel/ZadaniPrace.vue";
 import { useHead } from "@unhead/vue";
@@ -45,6 +45,13 @@ const copyTrida = ref(0)
 const nastaveni = ref()
 
 let source: EventSource | null = null
+
+const titleJmenoTridy = computed(() => {
+    return trida.value.jmeno
+})
+useHead({
+    title: titleJmenoTridy
+})
 
 onMounted(() => {
     get()
@@ -91,10 +98,6 @@ function get() {
         vsechnyTridy.value.sort((a: { jmeno: string; }, b: { jmeno: string; }) => a.jmeno.localeCompare(b.jmeno))
 
         studentTridaZmena.value = trida.value.id
-
-        useHead({
-            title: trida.value.jmeno
-        })
     }).catch(e => {
         console.log(e)
         if (e.response.data.error == "sql: no rows in result set") {
@@ -288,12 +291,14 @@ function getVysledkyStudentuVPraci(id: number) {
         Třída: {{ trida.jmeno == undefined ? "-.-" : trida.jmeno }}
     </h1>
 
-    <PrepinacTabu v-show="prepinacTabu?.tab != 'zadani'" :taby="[['zaci', 'Studenti'], ['prace', 'Práce'], ['nastaveni', 'Nastavení']]"
-        default-tab="zaci" ref="prepinac-tabu" />
+    <PrepinacTabu v-show="prepinacTabu?.tab != 'zadani'"
+        :taby="[['zaci', 'Studenti'], ['prace', 'Práce'], ['nastaveni', 'Nastavení']]" default-tab="zaci"
+        ref="prepinac-tabu" />
 
     <div v-if="prepinacTabu?.tab == 'zaci'" id="pulic">
         <div id="kontejner">
-            <div v-for="st in studenti" class="blok" @click="select(st.id)" :class="{ oznaceny: selectnutej == st.id }" :key="st.id">
+            <div v-for="st in studenti" class="blok" @click="select(st.id)" :class="{ oznaceny: selectnutej == st.id }"
+                :key="st.id">
                 <div>
                     <h3>{{ st.jmeno }}</h3>
                     <h4>{{ st.email }}</h4>
@@ -322,8 +327,8 @@ function getVysledkyStudentuVPraci(id: number) {
                 <div v-if="!upravaStudenta">
                     <h2>
                         <span>{{ studentOznacenej.jmeno }}</span>
-                        <img id="upravit" @click="upravaStudenta = true; jmenoUprava = studentOznacenej.jmeno" src="../../assets/icony/upravit.svg"
-                            alt="Upravit">
+                        <img id="upravit" @click="upravaStudenta = true; jmenoUprava = studentOznacenej.jmeno"
+                            src="../../assets/icony/upravit.svg" alt="Upravit">
                     </h2>
                     <h3>{{ studentOznacenej.email }}</h3>
                 </div>
@@ -334,7 +339,8 @@ function getVysledkyStudentuVPraci(id: number) {
                             <option :value="-1">Odebrat</option>
                             <option v-for="v in vsechnyTridy" :value="v.id" :key="v.id">{{ v.jmeno }}</option>
                         </select>
-                        <button type="submit" @click="zmenaJmena($event); zmenaStudentTridy($event)" class="tlacitko" id="ulozit">Potvrdit</button>
+                        <button type="submit" @click="zmenaJmena($event); zmenaStudentTridy($event)" class="tlacitko"
+                            id="ulozit">Potvrdit</button>
                     </div>
                 </form>
             </div>
@@ -343,12 +349,14 @@ function getVysledkyStudentuVPraci(id: number) {
 
             <div class="udaj">
                 <h4>Průměrná rychlost:</h4>
-                <div>{{ naJednoDesetiny(studentOznacenej.rychlost) == -1 ? "-" : naJednoDesetiny(studentOznacenej.rychlost) }} <span>CPM</span></div>
+                <div>{{ naJednoDesetiny(studentOznacenej.rychlost) == -1 ? "-" :
+                    naJednoDesetiny(studentOznacenej.rychlost) }} <span>CPM</span></div>
             </div>
 
             <div class="udaj">
                 <h4>Průměrná přesnost:</h4>
-                <div>{{ naJednoDesetiny(studentOznacenej.uspesnost) == -1 ? "-" : naJednoDesetiny(studentOznacenej.uspesnost) }} <span>%</span></div>
+                <div>{{ naJednoDesetiny(studentOznacenej.uspesnost) == -1 ? "-" :
+                    naJednoDesetiny(studentOznacenej.uspesnost) }} <span>%</span></div>
             </div>
 
             <div class="udaj">
@@ -372,8 +380,11 @@ function getVysledkyStudentuVPraci(id: number) {
                     <span>{{ p.datum.toLocaleDateString("cs-CZ") }}</span>
 
                     <div v-if="cpmVPracich.get(p.id) != undefined || nacitamStudenta" class="udaje">
-                        <div>{{ cpmVPracich.get(p.id) == undefined ? "..." : naJednoDesetiny(cpmVPracich.get(p.id)!) }} <span>CPM</span></div>
-                        <div>{{ presnostVPracich.get(p.id) == undefined ? "..." : naJednoDesetiny(presnostVPracich.get(p.id)!) }} <span>%</span></div>
+                        <div>{{ cpmVPracich.get(p.id) == undefined ? "..." : naJednoDesetiny(cpmVPracich.get(p.id)!) }}
+                            <span>CPM</span>
+                        </div>
+                        <div>{{ presnostVPracich.get(p.id) == undefined ? "..." :
+                            naJednoDesetiny(presnostVPracich.get(p.id)!) }} <span>%</span></div>
                     </div>
                     <div v-else>
                         <Tooltip zprava="Nedokončil/a" :sirka="120" :vzdalenost="-3"><span>---</span></Tooltip>
@@ -392,18 +403,25 @@ function getVysledkyStudentuVPraci(id: number) {
             <span>Zatím nejsou žádné zadané práce. <br>První vytvoříte pomocí tohoto tlačítka.</span>
             <img src="../../assets/icony/sipkaOhnuta.svg" alt="Šipka na tlačítko" width="100">
         </div>
-        <PraceBlok v-for="v, i in prace" :key="i" :prace="v" :selectnutaPraceID :studentiVPraci @unselect="selectnutaPraceID = -1" @select="selectnutaPraceID = v.id" @reload="() => {get();getVysledkyStudentuVPraci(v.id)}" @copy="copyPraciIndex = i" :cisloPrace="prace.length - i" :pocetStudentu="studenti.length"/>
+        <PraceBlok v-for="v, i in prace" :key="i" :prace="v" :selectnutaPraceID :studentiVPraci
+            @unselect="selectnutaPraceID = -1" @select="selectnutaPraceID = v.id"
+            @reload="() => { get(); getVysledkyStudentuVPraci(v.id) }" @copy="copyPraciIndex = i"
+            :cisloPrace="prace.length - i" :pocetStudentu="studenti.length" />
     </div>
-    <ZadaniPrace v-else-if="prepinacTabu?.tab == 'zadani'" :tridaID="trida.id" @zadano="zadano" :posledniRychlost="posledniRychlostPrace" />
+    <ZadaniPrace v-else-if="prepinacTabu?.tab == 'zadani'" :tridaID="trida.id" @zadano="zadano"
+        :posledniRychlost="posledniRychlostPrace" />
     <NastaveniTridy v-else-if="prepinacTabu?.tab == 'nastaveni'" ref="nastaveni" :trida="trida"
-        :pocetStudentu="vsechnyTridy.find(t => t.id === trida.id)!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu" @refresh="get" />
+        :pocetStudentu="vsechnyTridy.find(t => t.id === trida.id)!.pocet_studentu" @prejmenovatTridu="prejmenovatTridu"
+        @refresh="get" />
 
     <dialog ref="dialog1">
         <div id="copy-menu">
             <h2>Zkopírovat práci {{ prace.length - copyPraciIndex }} do:</h2>
             <select v-model="copyTrida">
                 <option :value="0">Vyberte třídu</option>
-                <option v-for="t in vsechnyTridy" :value="t.id" :key="t.id">{{ t.id == trida.id ? t.jmeno + " (Tato třída)" : t.jmeno }}</option>
+                <option v-for="t in vsechnyTridy" :value="t.id" :key="t.id">
+                    {{ t.id == trida.id ? t.jmeno + " (Tato třída)" : t.jmeno }}
+                </option>
             </select>
             <div>
                 <button class="tlacitko" @click="copyPraciIndex = -1">Zrušit</button>

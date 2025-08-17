@@ -2,7 +2,7 @@
 import axios from "axios";
 import { getToken, pridatOznameni, naJednoDesetiny } from "../../utils";
 import { computed, onMounted, ref } from "vue";
-import { useHead } from "unhead";
+import { useHead } from "@unhead/vue";
 import { mobil, role } from "../../stores";
 import Tooltip from "../../components/Tooltip.vue";
 import { useRouter } from "vue-router";

@@ -20,6 +20,7 @@ func GetTrida(id uint) (Trida, error) {
 	if err != nil {
 		return trida, err
 	}
+	defer row.Close()
 	err = scan.Row(&trida, row)
 	return trida, err
 }
@@ -30,6 +31,7 @@ func GetTridaByStudentID(id uint) (Trida, error) {
 	if err != nil {
 		return trida, err
 	}
+	defer row.Close()
 	err = scan.Row(&trida, row)
 	return trida, err
 }
@@ -41,6 +43,7 @@ func GetTridy(ucitelID uint) ([]TridaInfo, error) {
 	if err != nil {
 		return tridy, err
 	}
+	defer rows.Close()
 
 	err = scan.Rows(&tridy, rows)
 	return tridy, err
@@ -53,6 +56,7 @@ func GetStudentyZeTridy(tridaID uint) ([]Student, error) {
 	if err != nil {
 		return zaci, err
 	}
+	defer rows.Close()
 
 	err = scan.Rows(&zaci, rows)
 	return zaci, err
@@ -65,6 +69,7 @@ func GetStudentyZPrace(praceID uint) ([]Student, error) {
 	if err != nil {
 		return zaci, err
 	}
+	defer rows.Close()
 
 	err = scan.Rows(&zaci, rows)
 	return zaci, err
@@ -111,6 +116,7 @@ func GetTridaByKod(kod string) (Trida, error) {
 	if err != nil {
 		return trida, err
 	}
+	defer row.Close()
 	err = scan.Row(&trida, row)
 	return trida, err
 }
@@ -121,6 +127,7 @@ func GetTridaByUziv(id uint) (Trida, error) {
 	if err != nil {
 		return trida, err
 	}
+	defer row.Close()
 	err = scan.Row(&trida, row)
 	return trida, err
 }
@@ -250,12 +257,6 @@ func GetTypyCviceni(tridaID uint) (map[string][]Cviceni2, error) {
 	return mapa, nil
 }
 
-func GetTextZLekce(typ, lekcePismena string) (string, error) {
-	rows, _ := DB.Query(`SELECT typ, string_agg( pismena::VARCHAR, ', ' ORDER BY id ) FROM ( SELECT DISTINCT c.typ, l.pismena, l.id FROM cviceni c INNER JOIN lekce l ON l.id = c.lekce_id ) GROUP BY typ;`)
-	defer rows.Close()
-	return "", nil
-}
-
 func CreateSkola(jmeno, email, telefon string) (uint, error) {
 	var skolaID uint
 	err := DB.QueryRow(`INSERT INTO skola (jmeno, kontaktni_email, kontaktni_telefon) VALUES ($1, $2, $3) RETURNING id;`, jmeno, email, telefon).Scan(&skolaID)
@@ -268,6 +269,8 @@ func GetSkolaByUcitel(uzivID uint) (Skola, error) {
 	if err != nil {
 		return skola, err
 	}
+	defer rows.Close()
+
 	err = scan.Row(&skola, rows)
 	return skola, err
 }
@@ -278,6 +281,8 @@ func GetUcitele(skolaID uint) ([]Ucitel, error) {
 	if err != nil {
 		return ucitele, err
 	}
+	defer rows.Close()
+
 	err = scan.Rows(&ucitele, rows)
 	return ucitele, err
 }

@@ -100,24 +100,36 @@ function smazatDiakritiku() {
     if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    if (puvodniText.value === textovePole.value!.text) {
+        puvodniText.value = ""
+    }
 }
 
 function smazatVelkaPismena() {
     if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.toLocaleLowerCase()
+    if (puvodniText.value === textovePole.value!.text) {
+        puvodniText.value = ""
+    }
 }
- 
+
 function smazatEnterAMezery() {
     if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.replace(/\n/g, " ").replace(/ {2,}/g, " ").trim()
+    if (puvodniText.value === textovePole.value!.text) {
+        puvodniText.value = ""
+    }
 }
 
 function vymenitUvozovky() {
     if (textovePole.value!.text.length == 0) return
     puvodniText.value = textovePole.value!.text
     textovePole.value!.text = textovePole.value!.text.replace(/[„“”‟❞❝＂⹂]/g, '"').replace(/[‚’‘‛❛❜]/g, "'")
+    if (puvodniText.value === textovePole.value!.text) {
+        puvodniText.value = ""
+    }
 }
 
 function zrusitPosledniUpravu() {
@@ -180,7 +192,8 @@ const odhadovanaDelkaTextu = computed(() => {
 
             <div id="moznosti">
                 <div id="delka">
-                    <Tooltip zprava="Pokud student dopíše text před vypršením časového limitu, bude ho psát znovu." :sirka="210" :vzdalenost="0">
+                    <Tooltip zprava="Pokud student dopíše text před vypršením časového limitu, bude ho psát znovu."
+                        :sirka="210" :vzdalenost="0">
                         <h3>Čas</h3>
                     </Tooltip>
                     <hr id="predel2">
@@ -205,8 +218,10 @@ const odhadovanaDelkaTextu = computed(() => {
                     </div>
 
                     <div class="kontejner">
-                        <button @click="zrusitPosledniUpravu" class="cervene-tlacitko" :disabled="puvodniText.length == 0">Zrušit poslední
-                            úpravu</button>
+                        <button @click="zrusitPosledniUpravu" class="cervene-tlacitko"
+                            :disabled="puvodniText.length == 0">
+                            Zrušit poslední úpravu
+                        </button>
                     </div>
 
                     <button @click="pridatPraci" class="tlacitko">Zadat práci</button>
@@ -223,11 +238,13 @@ const odhadovanaDelkaTextu = computed(() => {
                     <option value="3">Slova z lekce</option>
                     <option value="4">Programátorské</option>
                     <option v-for="t, i in texty" :value="t.jmeno"
-                        :class="{ lehkaObtiznost: t.obtiznost == 1, stredniObtiznost: t.obtiznost == 2, tezkaObtiznost: t.obtiznost == 3 }" :key="i">
+                        :class="{ lehkaObtiznost: t.obtiznost == 1, stredniObtiznost: t.obtiznost == 2, tezkaObtiznost: t.obtiznost == 3 }"
+                        :key="i">
                         {{ t.jmeno }}
                     </option>
                 </select>
-                <select v-model="lekceTextu" :disabled="typTextu != '1' && typTextu != '2' && typTextu != '3' && typTextu != '4'"
+                <select v-model="lekceTextu"
+                    :disabled="typTextu != '1' && typTextu != '2' && typTextu != '3' && typTextu != '4'"
                     style="width: 121px;">
                     <option value="" style="color: #a1a1a1;">Vybrat lekci</option>
                     <option v-for="l in lekce" :value="l" :key="l.pismena">{{ format(l.pismena) }}</option>
